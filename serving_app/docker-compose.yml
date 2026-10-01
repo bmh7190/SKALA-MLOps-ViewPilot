@@ -11,5 +11,6 @@ services:
       RETRAIN_TRAIN_CSV: ${RETRAIN_TRAIN_CSV:-}
       RETRAIN_VALIDATION_CSV: ${RETRAIN_VALIDATION_CSV:-}
       AUTO_RETRAIN: ${AUTO_RETRAIN:-true}
+      DEMO_MODE: ${DEMO_MODE:-false}
     volumes:
       - ../runtime:/app/runtime

@@ -4,7 +4,10 @@ import os
 from pathlib import Path
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
-RUNTIME_DIR = Path(os.getenv("VIEWPILOT_RUNTIME_DIR", PROJECT_DIR / "runtime")).resolve()
+BASE_RUNTIME_DIR = Path(os.getenv("VIEWPILOT_RUNTIME_DIR", PROJECT_DIR / "runtime")).resolve()
+DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
+# 시연 중 모델이 교체되어도 원본 모델·기준값·관측 DB는 보존한다.
+RUNTIME_DIR = BASE_RUNTIME_DIR / "demo" if DEMO_MODE else BASE_RUNTIME_DIR
 MODEL_DIR = RUNTIME_DIR / "models"
 UPLOAD_DIR = RUNTIME_DIR / "uploads"
 LOG_DIR = RUNTIME_DIR / "logs"

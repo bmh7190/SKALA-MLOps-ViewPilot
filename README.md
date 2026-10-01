@@ -93,12 +93,58 @@ API 문서: http://localhost:8000/docs
 모델과 MLflow 데이터는 `runtime/`에 보존합니다. 가상환경·실행 산출물·`.env`는 Git에 포함하지 않습니다.
 한 프로세스의 실습 범위이며, CLI 학습과 API 학습을 동시에 실행하지 마세요.
 
+## 서버 재시작으로 초기화하는 시연 모드
+
+최초 모델 학습과 `calculate_baseline.py` 실행은 `DEMO_MODE=false`에서 한 번 완료합니다.
+그다음 `.env`의 `DEMO_MODE=true`, `AUTO_RETRAIN=true`를 설정하고 서버를 실행합니다.
+
+```bash
+set -a
+source .env
+set +a
+python -m uvicorn serving_app.main:app --host 127.0.0.1 --port 8000 --workers 1
+```
+
+시연 모드에서는 서버 시작마다 원본 `runtime/models/production.json`이 가리키는 모델과 그 버전의
+저장된 기준값을 `runtime/demo/`로 복사합니다. 시연 중의 모델 교체·평가 DB·로그·업로드·MLflow 기록은
+이 폴더에만 저장합니다. 서버를 끄고 다시 켜면 시연 폴더를 복원하고 평가 기록은 비워집니다.
+원본 모델과 원본 관측 기록은 유지하며, 서버를 켤 때마다 최초 모델을 다시 학습하지 않습니다.
+기준값과 버전은 저장된 원본 결과에서 자동으로 읽습니다. `.env` 파일을 덮어쓰지는 않습니다.
+
+대시보드의 두 버튼은 **본문 없이** 아래 API를 각각 호출하면 됩니다.
+
+```bash
+# 정상 버튼: 정상 데이터 120개를 평가하고 결과 반환
+curl -X POST http://localhost:8000/api/v1/simulations/normal/run
+
+# 드리프트 버튼: 감지 → 앞 60개 재학습 → 뒤 60개 검증 → 모델 교체 판단
+curl -X POST http://localhost:8000/api/v1/simulations/drift/run
+```
+
+각 버튼은 독립적으로 실행할 수 있습니다. 정상 버튼 후 드리프트 버튼을 실행해도 됩니다.
+드리프트로 모델이 교체되면 새 기준값이 없으므로 서버를 재시작한 뒤 다른 시연을 진행하세요.
+같은 시나리오를 다시 누르면 409와 재시작 안내를 반환합니다. 두 버튼을 동시에 실행해도 409입니다.
+초기화는 서버 시작 때 일어나며 API 요청마다 원본으로 되돌리지는 않습니다.
+
+응답의 `events`에 30개 묶음별 결과가 순서대로 들어갑니다. `active_model_version`으로 최종 모델을,
+`baseline_required`로 새 기준값 필요 여부를 확인합니다. 요청은 시나리오가 끝난 후 응답하므로
+프론트엔드에서 실행 중 상태를 표시하고 재학습을 기다릴 충분한 타임아웃을 설정하세요.
+단계별 실시간 스트리밍이나 화면 버튼 자체는 구현하지 않았습니다.
+
+시연 모드는 로컬 SQLite MLflow 복사본과 로컬 모델을 사용합니다. 외부 MLflow 설정 대신 시연 DB에 기록합니다.
+시연 서버는 하나만, worker는 1개만 실행하고 `--reload`는 사용하지 마세요.
+`VIEWPILOT_RUNTIME_DIR`를 지정했다면 그 폴더가 원본이며, 그 안의 `demo/`가 초기화 대상입니다.
+일반 모드(`DEMO_MODE=false`)는 서버를 재시작해도 기록을 보존합니다.
+
 ## 시나리오 1 정상 운영과 시나리오 2 드리프트
 
 서버가 실행된 상태에서 새 터미널을 열고 프로젝트 가상환경을 활성화한 뒤 실행합니다.
 
 ```bash
 python scripts/run_scenarios.py --url http://localhost:8000
+# 정상 또는 드리프트만 실행하려면 다음 중 하나 사용
+python scripts/run_scenarios.py --scenario normal
+python scripts/run_scenarios.py --scenario drift
 ```
 
 스크립트는 `test_normal` 4묶음 다음 `test_drift` 앞 60개를 2묶음으로 전송합니다.
@@ -120,7 +166,7 @@ python scripts/run_scenarios.py --url http://localhost:8000
 시간 이벤트 재생은 하지 않으며, 운영의 예측·실제값 저장 공간과 분리해 집계합니다.
 실제 운영은 `/api/v1/videos/predictions`에서 먼저 예측을 저장하고 `/api/v1/videos/actuals`에서 나중에 실제값을 등록합니다.
 
-같은 runtime에서 같은 영상을 다시 보내도 중복 평가하지 않습니다. 모델이 교체된 뒤에도 같은 120개로 성능을 재평가하지 않습니다. 전체 실험을 재현하려면
+같은 runtime에서 같은 영상을 다시 보내도 중복 평가하지 않습니다. 시연 모드에서는 서버를 재시작하면 다시 실행할 수 있습니다. 아래 새 경로 방식은 일반 모드에서 사용합니다. 모델이 교체된 뒤에도 같은 120개로 성능을 재평가하지 않습니다. 전체 실험을 재현하려면
 새 터미널에서 `export VIEWPILOT_RUNTIME_DIR="$PWD/runtime/replay-2"`로 새 저장 위치를 지정하고
 학습부터 반복하세요. 학습·기준값 계산·서버 실행에 같은 저장 위치를 사용해야 합니다.
 
@@ -192,6 +238,8 @@ python scripts/run_scenarios.py --url http://localhost:8000
 - `POST /api/v1/videos/predictions`: 정답을 제외한 영상 한 행을 JSON으로 전달
 - `POST /api/v1/videos/predictions/csv`: 예측용 CSV
 - `POST /api/v1/videos/actuals`: `{"prediction_id":"...","target_views_day7":12000}`
+- `POST /api/v1/simulations/normal/run`: 정상 버튼용, 본문 없음, 시연 모드 전용
+- `POST /api/v1/simulations/drift/run`: 드리프트 버튼용, 본문 없음, 시연 모드 전용
 - `POST /api/v1/simulations/drift`: `{"videos":[정답 포함 영상 행, ...]}`; 선택 필드 `retraining_validation`에 별도 검증 행 전달
 - `POST /api/v1/simulations/drift/csv`: 정답 포함 시뮬레이션 CSV
 - `GET /api/v1/logs`: 운영 로그 파일 목록
@@ -208,6 +256,8 @@ CSV 업로드는 multipart `file` 필드, UTF-8, 최대 10MB입니다. JSON 배�
 - `data/observations.py`: SQLite 예측·실제값·평가 묶음
 - `serving_app/train_and_register.py`: 학습·조기 종료·모델 선택
 - `serving_app/model_loader.py`: 모델·전처리 버전 로딩과 캐시 교체
+- `serving_app/demo.py`: 시작 시 원본 모델·기준값을 시연 폴더로 복원
+- `serving_app/routers/simulations.py`: 두 버튼용 시나리오 API
 - `serving_app/monitoring/`: 드리프트 판정과 재학습·검증 연결
 
 각 MLflow run별로 `model.keras`, `preprocessor.json`, `metadata.json`을 저장합니다.

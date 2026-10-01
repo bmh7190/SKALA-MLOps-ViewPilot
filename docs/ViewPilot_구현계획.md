@@ -62,3 +62,12 @@ Swagger는 영상 성과, 데이터셋, 모델 운영, 시뮬레이션, 상태 �
 일반 학습·재학습의 정답 가용 시점 검사는 유지한다.
 단위/API 테스트와 실제 TensorFlow·MLflow 테스트에서 미개선 시 유지 및 교체·재로딩 분기도 검증한다.
 실제 수치와 조건은 scenario_results.json을 참고한다. 대시보드는 수정하지 않았다.
+
+## 재시작 가능한 두 시나리오
+
+`DEMO_MODE=true`이면 서버 시작 시 원본 모델·기준값과 MLflow DB를 `runtime/demo`로 복사한다.
+시연의 관측·재학습·교체는 이 복사본에만 반영하고, 재시작하면 시연 상태를 다시 복원한다.
+원본 모델과 관측 기록은 보존한다. 일반 모드에는 초기화를 적용하지 않는다.
+정상 버튼은 `POST /api/v1/simulations/normal/run`, 드리프트 버튼은 `POST /api/v1/simulations/drift/run`이다.
+두 API는 본문 없이 독립 실행하며, 정상 후 드리프트도 가능하다. 중복·동시 실행은 409로 안내한다.
+CLI에는 `--scenario normal|drift|both`를 추가했다. 대시보드 파일은 수정하지 않았다.

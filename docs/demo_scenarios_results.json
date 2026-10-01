@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-01",
+  "cycles": [
+    {
+      "cycle": 1,
+      "startup": {
+        "status": "ok",
+        "demo_mode": true,
+        "model_ready": true,
+        "model_version": "1",
+        "baseline_rmsle": 0.08797057385361541,
+        "drift_threshold": 0.18797057385361543,
+        "deployment_gate": null
+      },
+      "normal_blocks": [
+        0.12452760146128454,
+        0.11380021469933772,
+        0.1202397501178517,
+        0.09378764344459133
+      ],
+      "drift_statuses": [
+        "warning",
+        "retrain_review"
+      ],
+      "retraining": {
+        "status": "completed",
+        "promoted": true,
+        "rmsle": 0.11411411993981341,
+        "current_rmsle": 0.500456749347548,
+        "mae": 4841.3,
+        "gate": null,
+        "evaluation_mode": "retrospective",
+        "deployment_rule": "lower_validation_rmsle",
+        "training_count": 60,
+        "validation_count": 60,
+        "run_id": "3c086f9e505c4b2d958a78a2e2b045d4",
+        "epochs_completed": 10,
+        "best_epoch": 10,
+        "best_validation_loss": 0.013205111026763916,
+        "version": "2",
+        "baseline_required": true
+      },
+      "after": {
+        "status": "ok",
+        "demo_mode": true,
+        "model_ready": true,
+        "model_version": "2",
+        "baseline_rmsle": null,
+        "drift_threshold": null,
+        "deployment_gate": null
+      },
+      "source_unchanged": true
+    },
+    {
+      "cycle": 2,
+      "startup": {
+        "status": "ok",
+        "demo_mode": true,
+        "model_ready": true,
+        "model_version": "1",
+        "baseline_rmsle": 0.08797057385361541,
+        "drift_threshold": 0.18797057385361543,
+        "deployment_gate": null
+      },
+      "normal_blocks": [
+        0.12452760146128454,
+        0.11380021469933772,
+        0.1202397501178517,
+        0.09378764344459133
+      ],
+      "drift_statuses": [
+        "warning",
+        "retrain_review"
+      ],
+      "retraining": {
+        "status": "completed",
+        "promoted": true,
+        "rmsle": 0.11411411993981341,
+        "current_rmsle": 0.500456749347548,
+        "mae": 4841.3,
+        "gate": null,
+        "evaluation_mode": "retrospective",
+        "deployment_rule": "lower_validation_rmsle",
+        "training_count": 60,
+        "validation_count": 60,
+        "run_id": "5f11c44b06944c258fd28efd7efea886",
+        "epochs_completed": 10,
+        "best_epoch": 10,
+        "best_validation_loss": 0.013205111026763916,
+        "version": "2",
+        "baseline_required": true
+      },
+      "after": {
+        "status": "ok",
+        "demo_mode": true,
+        "model_ready": true,
+        "model_version": "2",
+        "baseline_rmsle": null,
+        "drift_threshold": null,
+        "deployment_gate": null
+      },
+      "source_unchanged": true
+    }
+  ],
+  "tests": 44,
+  "description": "Synthetic data demo: two server starts restore original v1; each normal/drift button run promotes a candidate to v2; source model, baseline and databases remain byte-identical.",
+  "limitations": [
+    "Demo mode only; ordinary runtime persists.",
+    "Single server process, one worker, no auto-reload.",
+    "Retrospective synthetic data; not independent future performance.",
+    "UI buttons are implemented by the dashboard; server returns after the complete scenario."
+  ]
+}

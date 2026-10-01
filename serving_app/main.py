@@ -9,22 +9,37 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from serving_app import model_loader
-from serving_app.config import LOG_DIR, PROJECT_DIR, baseline_rmsle, optional_number
-from serving_app.routers import data, health, logs, predict, training
+from serving_app.config import DEMO_MODE, LOG_DIR, PROJECT_DIR, baseline_rmsle, optional_number
+from serving_app.routers import data, health, logs, predict, simulations, training
 
-LOG_DIR.mkdir(parents=True, exist_ok=True)
 logger = logging.getLogger("aiops")
-logger.setLevel(logging.INFO)
-if not logger.handlers:
+
+
+def configure_logging():
+    # 시연 폴더 복원 후 파일을 연다. 이전 실행의 열린 핸들은 먼저 닫는다.
+    for handler in list(logger.handlers):
+        logger.removeHandler(handler)
+        handler.close()
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    logger.setLevel(logging.INFO)
     handler = logging.FileHandler(LOG_DIR / "aiops.log", encoding="utf-8")
     handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
     logger.addHandler(handler)
     logger.addHandler(logging.StreamHandler())
+
+
 request_logger = logging.getLogger("uvicorn.error")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if DEMO_MODE:
+        from serving_app.demo import reset_demo_runtime
+        reset_demo_runtime()
+        model_loader.clear_cache()
+    configure_logging()
+    if DEMO_MODE:
+        logger.info("demo reset: 원본 모델과 기준값을 복원했습니다. 정상·드리프트 시나리오를 실행할 수 있습니다.")
     # 잘못된 숫자 설정은 시작 시 알린다. 미설정은 허용해 CSV 업로드부터 진행할 수 있다.
     baseline_rmsle()
     optional_number("DEPLOY_RMSLE_GATE")
@@ -65,7 +80,7 @@ async def missing_prediction(request: Request, error: LookupError):
     return JSONResponse(status_code=404, content={"detail": str(error)})
 
 
-for router in (predict.router, data.router, training.router, health.router, logs.router):
+for router in (predict.router, data.router, training.router, simulations.router, health.router, logs.router):
     app.include_router(router)
 
 # API보다 뒤에 등록해야 /api/v1 경로가 정적 파일로 처리되지 않는다.

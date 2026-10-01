@@ -18,19 +18,24 @@ def split_drift_rows(rows):
     return validate_splits(ordered[:60], ordered[60:], retrospective=True)
 
 
-def run_scenarios(url: str, data_dir: Path) -> dict:
-    training, validation = split_drift_rows(load_rows(data_dir / "test_drift.csv"))
+def run_scenarios(url: str, data_dir: Path, scenario: str = "both") -> dict:
+    if scenario not in {"normal", "drift", "both"}:
+        raise ValueError("scenario는 normal, drift, both 중 하나여야 합니다.")
+    training, validation = [], []
+    if scenario != "normal":
+        training, validation = split_drift_rows(load_rows(data_dir / "test_drift.csv"))
     response = requests.get(f"{url}/health", timeout=30)
     response.raise_for_status()
     health = response.json()
     if not health["model_ready"] or health["baseline_rmsle"] is None:
         raise ValueError("모델을 선택하고 해당 버전의 베이스라인을 설정한 뒤 서버를 실행하세요.")
     version = health["model_version"]
-    report = {"model_version": version, "baseline_rmsle": health["baseline_rmsle"],
+    report = {"scenario": scenario, "model_version": version, "baseline_rmsle": health["baseline_rmsle"],
               "threshold": health["drift_threshold"], "evaluation_mode": "retrospective",
               "retraining_video_ids": [row["video_id"] for row in training],
               "validation_video_ids": [row["video_id"] for row in validation], "events": []}
-    for name in ["test_normal", "test_drift"]:
+    names = ["test_normal", "test_drift"] if scenario == "both" else [f"test_{scenario}"]
+    for name in names:
         rows = (training if name == "test_drift" else
                 sorted(load_rows(data_dir / "test_normal.csv"), key=lambda row: row["published_at"]))
         if len(rows) % 30:
@@ -46,7 +51,7 @@ def run_scenarios(url: str, data_dir: Path) -> dict:
             if check["model_version"] != version:
                 raise ValueError("시나리오 실행 중 다른 모델 버전이 사용되었습니다.")
             if len(check["new_blocks"]) != 1:
-                raise ValueError("이미 평가한 영상이거나 이전 미완료 묶음이 있습니다. 새 runtime에서 재현하세요.")
+                raise ValueError("이미 평가한 영상이거나 이전 미완료 묶음이 있습니다. 시연 모드에서는 서버를 재시작하고, 일반 모드에서는 새 runtime을 사용하세요.")
             event = {"file": name, "window": start // 30 + 1, **check}
             report["events"].append(event)
             print(json.dumps(event, ensure_ascii=False))
@@ -60,11 +65,12 @@ def run_scenarios(url: str, data_dir: Path) -> dict:
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--scenario", choices=["normal", "drift", "both"], default="both")
     parser.add_argument("--url", default="http://localhost:8000")
     parser.add_argument("--data-dir", type=Path, default=Path("data/synthetic"))
     parser.add_argument("--output", type=Path, default=Path("runtime/scenario_report.json"))
     args = parser.parse_args()
-    report = run_scenarios(args.url.rstrip("/"), args.data_dir)
+    report = run_scenarios(args.url.rstrip("/"), args.data_dir, args.scenario)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"결과 저장: {args.output}")

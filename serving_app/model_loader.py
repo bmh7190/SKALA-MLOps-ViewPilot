@@ -5,7 +5,7 @@ import os
 from threading import RLock
 
 from data.features import VideoPreprocessor, restore_prediction
-from serving_app.config import MODEL_DIR, MODEL_NAME, PRODUCTION_FILE, RUNTIME_DIR
+from serving_app.config import DEMO_MODE, MODEL_DIR, MODEL_NAME, PRODUCTION_FILE, RUNTIME_DIR
 
 logger = logging.getLogger("aiops")
 _model_cache = None
@@ -17,8 +17,11 @@ def configure_mlflow():
     import mlflow
 
     RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
-    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", f"sqlite:///{RUNTIME_DIR / 'mlflow.db'}")
+    local_uri = f"sqlite:///{RUNTIME_DIR / 'mlflow.db'}"
+    tracking_uri = local_uri if DEMO_MODE else os.getenv("MLFLOW_TRACKING_URI", local_uri)
     mlflow.set_tracking_uri(tracking_uri)
+    if DEMO_MODE:
+        mlflow.set_registry_uri(local_uri)
     experiment = mlflow.get_experiment_by_name("viewpilot")
     if experiment is None:
         mlflow.create_experiment("viewpilot", artifact_location=(RUNTIME_DIR / "mlruns").as_uri())
@@ -78,6 +81,13 @@ def get_model() -> LoadedModel:
             _cache_pointer = pointer_text
             logger.info("model loaded: ViewPilot v%s", loaded.version)
         return _model_cache
+
+
+def clear_cache():
+    global _model_cache, _cache_pointer
+    with _cache_lock:
+        _model_cache = None
+        _cache_pointer = None
 
 
 def load_eager() -> LoadedModel:

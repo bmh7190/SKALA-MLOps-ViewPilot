@@ -89,3 +89,38 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(fit.call_args.args[1], [LabeledVideo.model_validate(r).model_dump(mode='json') for r in validation])
         self.assertEqual(len(observations.recorded_video_ids()), 60)
         self.assertTrue(response.json()['drift_check']['retraining']['baseline_required'])
+
+    def test_scenario_buttons_require_demo_mode(self):
+        for name in ('normal', 'drift'):
+            self.assertEqual(self.client.post(f'/api/v1/simulations/{name}/run').status_code, 409)
+
+    def test_normal_button_runs_four_blocks_and_rejects_replay(self):
+        self.model.predict_many.side_effect = lambda rows: [r['target_views_day7'] for r in rows]
+        with patch('serving_app.routers.simulations.DEMO_MODE', True), \
+             patch('serving_app.routers.simulations.check_configured_baseline'):
+            response = self.client.post('/api/v1/simulations/normal/run')
+            self.assertEqual(response.status_code, 200)
+            report = response.json()
+            self.assertEqual(len(report['events']), 4)
+            self.assertTrue(all(e['status'] == 'ok' for e in report['events']))
+            self.assertEqual(report['active_model_version'], '1')
+            self.assertEqual(self.client.post('/api/v1/simulations/normal/run').status_code, 409)
+
+    def test_drift_button_holds_out_validation_and_releases_lock(self):
+        self.model.predict_many.side_effect = lambda rows: [max(1, r['target_views_day7'] * 2) for r in rows]
+        with patch('serving_app.routers.simulations.DEMO_MODE', True), \
+             patch('serving_app.routers.simulations.check_configured_baseline'), \
+             patch.dict('os.environ', {'AUTO_RETRAIN': 'true'}), \
+             patch('serving_app.train_and_register.fine_tune', return_value={'promoted': False}) as fit:
+            response = self.client.post('/api/v1/simulations/drift/run')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([e['status'] for e in response.json()['events']], ['warning', 'retrain_review'])
+        self.assertEqual(len(observations.recorded_video_ids()), 60)
+        self.assertEqual([len(rows) for rows in fit.call_args.args], [60, 60])
+        from serving_app.routers.simulations import _scenario_lock
+        self.assertFalse(_scenario_lock.locked())
+
+    def test_scenario_button_rejects_concurrent_execution(self):
+        from serving_app.routers.simulations import _scenario_lock
+        with patch('serving_app.routers.simulations.DEMO_MODE', True), _scenario_lock:
+            self.assertEqual(self.client.post('/api/v1/simulations/normal/run').status_code, 409)

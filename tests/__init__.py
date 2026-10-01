@@ -6,4 +6,5 @@ import tempfile
 _runtime = tempfile.TemporaryDirectory(prefix="viewpilot-tests-")
 os.environ["VIEWPILOT_RUNTIME_DIR"] = _runtime.name
 os.environ["AUTO_RETRAIN"] = "false"
+os.environ["DEMO_MODE"] = "false"
 atexit.register(_runtime.cleanup)
