@@ -1,0 +1,41 @@
+"""프로젝트 경로와 운영 설정. 실습 원본의 모델·DB와 저장 위치를 분리한다."""
+import math
+import os
+from pathlib import Path
+
+PROJECT_DIR = Path(__file__).resolve().parents[1]
+RUNTIME_DIR = Path(os.getenv("VIEWPILOT_RUNTIME_DIR", PROJECT_DIR / "runtime")).resolve()
+MODEL_DIR = RUNTIME_DIR / "models"
+UPLOAD_DIR = RUNTIME_DIR / "uploads"
+LOG_DIR = RUNTIME_DIR / "logs"
+OBSERVATION_DB = RUNTIME_DIR / "observations.db"
+PRODUCTION_FILE = MODEL_DIR / "production.json"
+BASELINE_DIR = RUNTIME_DIR / "baselines"
+MODEL_NAME = "ViewPilot_Predictor"
+
+
+def optional_number(name: str) -> float | None:
+    text = os.getenv(name, "").strip()
+    if not text:
+        return None
+    value = float(text)
+    if not math.isfinite(value) or value < 0:
+        raise ValueError(f"{name}은 0 이상의 유한한 숫자여야 합니다.")
+    return value
+
+
+def baseline_rmsle(version: str | None = None) -> float | None:
+    # 모델 교체 후 이전 모델의 B를 재사용하지 않도록 버전도 함께 설정한다.
+    value = optional_number("BASELINE_RMSLE")
+    if version is not None and os.getenv("BASELINE_MODEL_VERSION", "").strip() != version:
+        return None
+    return value
+
+
+def deployment_gate(version: str | None = None) -> float | None:
+    gate = optional_number("DEPLOY_RMSLE_GATE")
+    if gate is not None:
+        return gate
+    # 최초 모델은 validation으로 선택한다. B가 아직 없어도 학습·저장할 수 있다.
+    baseline = baseline_rmsle(version) if version is not None else None
+    return max(baseline * 1.3, baseline + 0.1) if baseline is not None else None

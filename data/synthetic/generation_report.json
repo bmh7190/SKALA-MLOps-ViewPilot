@@ -1,0 +1,71 @@
+{
+  "seed": 20261001,
+  "synthetic": true,
+  "files": {
+    "train": {
+      "rows": 3000,
+      "first_published": "2025-01-01T00:00:00Z",
+      "last_published": "2025-04-30T23:02:24Z",
+      "target_min": 2148,
+      "target_max": 1537038,
+      "category_counts": {
+        "gaming": 757,
+        "education": 768,
+        "entertainment": 751,
+        "lifestyle": 724
+      }
+    },
+    "validation": {
+      "rows": 600,
+      "first_published": "2025-05-15T00:00:00Z",
+      "last_published": "2025-06-13T22:48:00Z",
+      "target_min": 2536,
+      "target_max": 1296442,
+      "category_counts": {
+        "gaming": 161,
+        "education": 137,
+        "entertainment": 161,
+        "lifestyle": 141
+      }
+    },
+    "baseline_normal": {
+      "rows": 30,
+      "first_published": "2025-07-01T00:00:00Z",
+      "last_published": "2025-07-10T16:00:00Z",
+      "target_min": 7539,
+      "target_max": 324203,
+      "category_counts": {
+        "gaming": 12,
+        "education": 5,
+        "entertainment": 8,
+        "lifestyle": 5
+      }
+    },
+    "test_normal": {
+      "rows": 120,
+      "first_published": "2025-07-25T00:00:00Z",
+      "last_published": "2025-08-23T18:00:00Z",
+      "target_min": 2598,
+      "target_max": 461342,
+      "category_counts": {
+        "gaming": 26,
+        "education": 39,
+        "entertainment": 33,
+        "lifestyle": 22
+      }
+    },
+    "test_drift": {
+      "rows": 120,
+      "first_published": "2025-09-10T00:00:00Z",
+      "last_published": "2025-09-24T21:00:00Z",
+      "target_min": 4765,
+      "target_max": 248265,
+      "category_counts": {
+        "gaming": 31,
+        "education": 33,
+        "entertainment": 21,
+        "lifestyle": 35
+      }
+    }
+  }
+}

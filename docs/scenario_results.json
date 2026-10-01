@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-01",
+  "data": "Provided synthetic data, seed 20261001; not real YouTube observations",
+  "model": "LSTM 32 -> 32 -> 16 -> Dense 16 -> Dense 1",
+  "model_version": "1",
+  "training_count": 3000,
+  "validation_count": 600,
+  "max_epochs": 100,
+  "patience": 10,
+  "epochs_completed": 100,
+  "best_epoch": 91,
+  "validation_rmsle": 0.10082709202079473,
+  "validation_mae": 8343.636666666667,
+  "baseline_rmsle": 0.08797057385361541,
+  "threshold": 0.18797057385361543,
+  "events": [
+    {
+      "file": "test_normal",
+      "window": 1,
+      "rmsle": 0.12452760146128454,
+      "status": "ok",
+      "consecutive_exceeds": 0,
+      "retraining": null
+    },
+    {
+      "file": "test_normal",
+      "window": 2,
+      "rmsle": 0.11380021469933772,
+      "status": "ok",
+      "consecutive_exceeds": 0,
+      "retraining": null
+    },
+    {
+      "file": "test_normal",
+      "window": 3,
+      "rmsle": 0.1202397501178517,
+      "status": "ok",
+      "consecutive_exceeds": 0,
+      "retraining": null
+    },
+    {
+      "file": "test_normal",
+      "window": 4,
+      "rmsle": 0.09378764344459133,
+      "status": "ok",
+      "consecutive_exceeds": 0,
+      "retraining": null
+    },
+    {
+      "file": "test_drift",
+      "window": 1,
+      "rmsle": 0.5324632895709617,
+      "status": "warning",
+      "consecutive_exceeds": 1,
+      "retraining": null
+    },
+    {
+      "file": "test_drift",
+      "window": 2,
+      "rmsle": 0.5007441589760344,
+      "status": "retrain_review",
+      "consecutive_exceeds": 2,
+      "retraining": {
+        "status": "deferred",
+        "reason": "별도의 재학습용 CSV와 검증용 CSV가 필요합니다. 테스트 영상은 자동 재사용하지 않습니다."
+      }
+    },
+    {
+      "file": "test_drift",
+      "window": 3,
+      "rmsle": 0.49191805237162767,
+      "status": "retrain_review",
+      "consecutive_exceeds": 3,
+      "retraining": {
+        "status": "deferred",
+        "reason": "별도의 재학습용 CSV와 검증용 CSV가 필요합니다. 테스트 영상은 자동 재사용하지 않습니다."
+      }
+    },
+    {
+      "file": "test_drift",
+      "window": 4,
+      "rmsle": 0.5088521845152415,
+      "status": "retrain_review",
+      "consecutive_exceeds": 4,
+      "retraining": {
+        "status": "deferred",
+        "reason": "별도의 재학습용 CSV와 검증용 CSV가 필요합니다. 테스트 영상은 자동 재사용하지 않습니다."
+      }
+    }
+  ],
+  "scope": "Initial training, fixed-model baseline, normal/drift API evaluation verified. Adaptation data not supplied: deferred. Separate smoke test covers training and deployment wiring; promotion branch uses fixed test weights."
+}

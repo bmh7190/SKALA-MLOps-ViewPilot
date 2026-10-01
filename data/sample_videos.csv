@@ -1,0 +1,4 @@
+video_id,published_at,day1_views,day1_impressions,day1_avg_view_percentage,day2_views,day2_impressions,day2_avg_view_percentage,day3_views,day3_impressions,day3_avg_view_percentage,subscriber_count_at_publish,category,target_views_day7
+vid_001,2026-09-01T00:00:00Z,3000,40000,45.5,2400,32000,43.2,1800,25000,41.8,15000,gaming,12000
+vid_002,2026-09-02T00:00:00Z,8000,100000,58.0,10000,125000,60.5,12000,150000,62.0,50000,education,75000
+vid_003,2026-09-03T00:00:00Z,15000,200000,38.0,11000,160000,35.5,8000,125000,33.0,90000,entertainment,42000

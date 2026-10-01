@@ -1,0 +1,8 @@
+.venv
+aiops
+legacy
+runtime
+.git
+__pycache__
+**/__pycache__
+.env

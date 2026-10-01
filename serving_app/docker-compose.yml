@@ -1,0 +1,15 @@
+services:
+  serving-app:
+    build:
+      context: ..
+      dockerfile: serving_app/Dockerfile
+    ports: ["8000:8000"]
+    environment:
+      BASELINE_RMSLE: ${BASELINE_RMSLE:-}
+      DEPLOY_RMSLE_GATE: ${DEPLOY_RMSLE_GATE:-}
+      BASELINE_MODEL_VERSION: ${BASELINE_MODEL_VERSION:-}
+      RETRAIN_TRAIN_CSV: ${RETRAIN_TRAIN_CSV:-}
+      RETRAIN_VALIDATION_CSV: ${RETRAIN_VALIDATION_CSV:-}
+      AUTO_RETRAIN: ${AUTO_RETRAIN:-true}
+    volumes:
+      - ../runtime:/app/runtime
