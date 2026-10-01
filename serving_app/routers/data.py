@@ -6,7 +6,7 @@ from fastapi import APIRouter, File, UploadFile
 from data.features import load_rows, parse_csv
 from data.storage import latest_upload, save_upload
 
-router = APIRouter(prefix="/data")
+router = APIRouter(prefix="/api/v1/datasets", tags=["데이터셋"])
 Purpose = Literal["train", "validation", "retrain_train", "retrain_validation"]
 
 
@@ -21,14 +21,14 @@ async def read_csv_file(file: UploadFile, require_target: bool = True) -> tuple[
     return text, parse_csv(text, require_target)
 
 
-@router.post("/upload")
+@router.post("", summary="학습·검증 CSV 업로드")
 async def upload(file: UploadFile = File(...), purpose: Purpose = "train"):
     text, rows = await read_csv_file(file)
     path = save_upload(text, purpose)
     return {"filename": path.name, "rows": len(rows), "purpose": purpose}
 
 
-@router.get("/status")
+@router.get("/latest", summary="용도별 최신 데이터셋 확인")
 def status(purpose: Purpose = "train"):
     try:
         path = latest_upload(purpose)

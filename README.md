@@ -116,7 +116,7 @@ python scripts/run_scenarios.py --url http://localhost:8000
 
 이 명령은 정답이 있는 과거 CSV로 수행하는 배치 시뮬레이션입니다. 실제 72시간·168시간을 기다리는
 시간 이벤트 재생은 하지 않으며, 운영의 예측·실제값 저장 공간과 분리해 집계합니다.
-실제 운영은 `/predict`에서 먼저 예측을 저장하고 `/observations`에서 나중에 실제값을 등록합니다.
+실제 운영은 `/api/v1/videos/predictions`에서 먼저 예측을 저장하고 `/api/v1/videos/actuals`에서 나중에 실제값을 등록합니다.
 
 같은 runtime에서 같은 영상을 다시 보내도 중복 평가하지 않습니다. 모델이 교체된 뒤에도 같은 120개로 성능을 재평가하지 않습니다. 전체 실험을 재현하려면
 새 터미널에서 `export VIEWPILOT_RUNTIME_DIR="$PWD/runtime/replay-2"`로 새 저장 위치를 지정하고
@@ -177,18 +177,23 @@ python scripts/run_scenarios.py --url http://localhost:8000
 
 ## API
 
-- `POST /data/upload?purpose=train`: 학습용 CSV
-- `POST /data/upload?purpose=validation`: 검증용 CSV
-- `POST /data/upload?purpose=retrain_train`: 별도 재학습용 CSV
-- `POST /data/upload?purpose=retrain_validation`: 별도 재학습 검증 CSV
-- `GET /data/status?purpose=train`: 해당 용도의 최신 파일 상태
-- `POST /training`: `{"mode":"initial","epochs":100,"patience":10}` 또는 `fine_tune`
-- `POST /predict`: 정답을 제외한 영상 한 행을 JSON으로 전달
-- `POST /predict/csv`: 예측용 CSV
-- `POST /observations`: `{"prediction_id":"...","target_views_day7":12000}`
-- `POST /predict/batch-test`: `{"videos":[정답 포함 영상 행, ...]}`; 선택 필드 `retraining_validation`에 별도 검증 행 전달
-- `POST /predict/batch-test/csv`: 정답 포함 시뮬레이션 CSV
-- `GET /health`, `GET /logs/aiops.log`: 모델·설정 상태와 로그
+서비스 API는 `/api/v1` 아래에 모았습니다. `/health`, `/docs`, `/openapi.json`은 기존 경로를 유지합니다.
+요청·응답 형식과 `purpose` 값은 그대로이며, 이전 API 경로는 제공하지 않습니다.
+대시보드 팀원은 아래 경로로 연동하세요. 보존한 실습용 정적 화면은 새 API에 맞춰 수정하지 않았습니다.
+
+- `POST /api/v1/datasets?purpose=train`: 학습용 CSV
+- `POST /api/v1/datasets?purpose=validation`: 검증용 CSV
+- `POST /api/v1/datasets?purpose=retrain_train`: 별도 재학습용 CSV
+- `POST /api/v1/datasets?purpose=retrain_validation`: 별도 재학습 검증 CSV
+- `GET /api/v1/datasets/latest?purpose=train`: 해당 용도의 최신 파일 상태
+- `POST /api/v1/models/training`: `{"mode":"initial","epochs":100,"patience":10}` 또는 `fine_tune`
+- `POST /api/v1/videos/predictions`: 정답을 제외한 영상 한 행을 JSON으로 전달
+- `POST /api/v1/videos/predictions/csv`: 예측용 CSV
+- `POST /api/v1/videos/actuals`: `{"prediction_id":"...","target_views_day7":12000}`
+- `POST /api/v1/simulations/drift`: `{"videos":[정답 포함 영상 행, ...]}`; 선택 필드 `retraining_validation`에 별도 검증 행 전달
+- `POST /api/v1/simulations/drift/csv`: 정답 포함 시뮬레이션 CSV
+- `GET /api/v1/logs`: 운영 로그 파일 목록
+- `GET /health`, `GET /api/v1/logs/aiops.log`: 모델·설정 상태와 로그
 
 CSV 업로드는 multipart `file` 필드, UTF-8, 최대 10MB입니다. JSON 배치 최대 영상 수는 1,000개입니다.
 운영 예측은 게시 후 72시간, 실제값 등록은 168시간이 지나야 합니다. 처음 예측한 값과 모델 버전을 저장하고

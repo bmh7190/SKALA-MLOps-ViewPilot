@@ -5,10 +5,10 @@ from serving_app.monitoring.retrain_trigger import retraining_data
 from serving_app.schemas import TrainingRequest
 from serving_app.train_and_register import train_and_register
 
-router = APIRouter()
+router = APIRouter(prefix="/api/v1/models", tags=["모델 운영"])
 
 
-@router.post("/training")
+@router.post("/training", summary="최초 모델 학습 또는 재학습 실행")
 def train(request: TrainingRequest):
     options = {"mode": request.mode, "epochs": request.epochs, "patience": request.patience}
     if request.mode == "fine_tune":

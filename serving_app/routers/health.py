@@ -9,7 +9,7 @@ from serving_app.monitoring.drift_detector import drift_threshold
 router = APIRouter()
 
 
-@router.get("/health")
+@router.get("/health", tags=["상태 확인"], summary="서버와 현재 모델 설정 확인")
 def health():
     pointer = json.loads(PRODUCTION_FILE.read_text(encoding="utf-8")) if PRODUCTION_FILE.exists() else None
     version = pointer["version"] if pointer else None

@@ -11,7 +11,7 @@ from serving_app.monitoring.retrain_trigger import check_and_trigger
 from serving_app.routers.data import read_csv_file
 from serving_app.schemas import BatchTestRequest, ObservationRequest, PredictResponse, VideoInput
 
-router = APIRouter()
+router = APIRouter(prefix="/api/v1")
 
 
 def predict_rows(rows: list[dict], mode: str = "live") -> list[dict]:
@@ -30,19 +30,19 @@ def predict_rows(rows: list[dict], mode: str = "live") -> list[dict]:
     return observations.save_predictions(rows, predictions, model.version, mode)
 
 
-@router.post("/predict", response_model=PredictResponse)
+@router.post("/videos/predictions", response_model=PredictResponse, tags=["영상 성과"], summary="영상의 7일 누적 조회수 예측")
 def predict(request: VideoInput):
     return predict_rows([request.features_dict()])[0]
 
 
-@router.post("/predict/csv")
+@router.post("/videos/predictions/csv", tags=["영상 성과"], summary="CSV의 여러 영상 조회수 예측")
 async def predict_csv(file: UploadFile = File(...)):
     _, rows = await read_csv_file(file, require_target=False)
     predictions = await run_in_threadpool(predict_rows, rows)
     return {"predictions": predictions}
 
 
-@router.post("/observations")
+@router.post("/videos/actuals", tags=["영상 성과"], summary="실제 7일 조회수 등록 및 드리프트 확인")
 def observe(request: ObservationRequest):
     record = observations.save_actual(request.prediction_id, request.target_views_day7)
     check = check_and_trigger(record["model_version"], "live")
@@ -57,14 +57,15 @@ def evaluate_videos(rows: list[dict], validation_rows=None) -> dict:
     return {"predictions": predictions, "drift_check": check}
 
 
-@router.post("/predict/batch-test")
+@router.post("/simulations/drift", tags=["시뮬레이션"], summary="과거 영상으로 드리프트·재학습 시나리오 실행",
+             description="videos는 드리프트 감지에 사용합니다. 재학습 비교용 영상은 retraining_validation에 따로 전달합니다.")
 def batch_test(request: BatchTestRequest):
     validation = ([v.model_dump(mode="json") for v in request.retraining_validation]
                   if request.retraining_validation is not None else None)
     return evaluate_videos([v.model_dump(mode="json") for v in request.videos], validation)
 
 
-@router.post("/predict/batch-test/csv")
+@router.post("/simulations/drift/csv", tags=["시뮬레이션"], summary="정답 포함 CSV로 드리프트 평가")
 async def batch_test_csv(file: UploadFile = File(...)):
     _, rows = await read_csv_file(file)
     return await run_in_threadpool(evaluate_videos, rows)

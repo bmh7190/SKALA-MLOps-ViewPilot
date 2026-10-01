@@ -40,7 +40,7 @@ def run_scenarios(url: str, data_dir: Path) -> dict:
             if name == "test_drift" and start == 30:
                 # 검증 60개는 드리프트 묶음에 전송하지 않고 재학습 비교용으로만 전달한다.
                 payload["retraining_validation"] = validation
-            response = requests.post(f"{url}/predict/batch-test", json=payload, timeout=600)
+            response = requests.post(f"{url}/api/v1/simulations/drift", json=payload, timeout=600)
             response.raise_for_status()
             check = response.json()["drift_check"]
             if check["model_version"] != version:

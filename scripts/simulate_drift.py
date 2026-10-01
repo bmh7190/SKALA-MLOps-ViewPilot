@@ -18,7 +18,7 @@ def main():
     rows = load_rows(args.csv)
     # 30행씩 전송해 각 묶음의 평가와 연속 초과 상태를 확인한다.
     for start in range(0, len(rows), 30):
-        response = requests.post(f"{args.url.rstrip('/')}/predict/batch-test",
+        response = requests.post(f"{args.url.rstrip('/')}/api/v1/simulations/drift",
                                  json={"videos": rows[start:start + 30]}, timeout=600)
         response.raise_for_status()
         print(json.dumps(response.json()["drift_check"], ensure_ascii=False, indent=2))

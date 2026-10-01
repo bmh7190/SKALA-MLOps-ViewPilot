@@ -68,5 +68,5 @@ async def missing_prediction(request: Request, error: LookupError):
 for router in (predict.router, data.router, training.router, health.router, logs.router):
     app.include_router(router)
 
-# API보다 뒤에 등록해야 /predict 등의 경로가 정적 파일로 처리되지 않는다.
+# API보다 뒤에 등록해야 /api/v1 경로가 정적 파일로 처리되지 않는다.
 app.mount("/", StaticFiles(directory=PROJECT_DIR / "serving_app" / "static", html=True), name="static")

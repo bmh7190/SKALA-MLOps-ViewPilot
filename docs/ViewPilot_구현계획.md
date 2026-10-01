@@ -1,5 +1,13 @@
 # ViewPilot 개발 구현
 
+## API 경로
+
+영상 예측과 실제값 등록은 `/api/v1/videos`, 데이터 업로드·조회는 `/api/v1/datasets`,
+학습은 `/api/v1/models/training`, 과거 데이터 시나리오는 `/api/v1/simulations/drift`로 구분한다.
+운영 로그는 `/api/v1/logs`이며 `/health`와 `/docs`는 유지한다.
+요청·응답 형식은 유지하고 실행 스크립트·API 테스트를 새 경로로 변경했다.
+Swagger는 영상 성과, 데이터셋, 모델 운영, 시뮬레이션, 상태 확인으로 묶는다.
+
 ## 파일별 데이터 분리
 
 `train.csv`와 `validation.csv`를 독립적으로 입력받는다. 기존 한 파일 내부의 비율 분할은 사용하지 않는다.
