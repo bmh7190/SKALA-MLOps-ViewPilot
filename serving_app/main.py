@@ -1,4 +1,4 @@
-"""ViewPilot API 진입점. 정적 화면은 실습 원본을 유지한다."""
+"""ViewPilot API 진입점. 연동된 대시보드를 같은 서버에서 제공한다."""
 import logging
 import os
 from contextlib import asynccontextmanager
