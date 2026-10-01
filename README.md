@@ -235,6 +235,8 @@ python scripts/run_scenarios.py --scenario drift
 - `POST /api/v1/datasets?purpose=retrain_validation`: 별도 재학습 검증 CSV
 - `GET /api/v1/datasets/latest?purpose=train`: 해당 용도의 최신 파일 상태
 - `POST /api/v1/models/training`: `{"mode":"initial","epochs":100,"patience":10}` 또는 `fine_tune`
+- `GET /api/v1/videos/predictions`: 영상별 예측·실제값 이력 조회
+- `GET /api/v1/monitoring/drift`: 완료된 30개 묶음의 드리프트 평가 이력 조회
 - `POST /api/v1/videos/predictions`: 정답을 제외한 영상 한 행을 JSON으로 전달
 - `POST /api/v1/videos/predictions/csv`: 예측용 CSV
 - `POST /api/v1/videos/actuals`: `{"prediction_id":"...","target_views_day7":12000}`
@@ -248,6 +250,49 @@ python scripts/run_scenarios.py --scenario drift
 CSV 업로드는 multipart `file` 필드, UTF-8, 최대 10MB입니다. JSON 배치 최대 영상 수는 1,000개입니다.
 운영 예측은 게시 후 72시간, 실제값 등록은 168시간이 지나야 합니다. 처음 예측한 값과 모델 버전을 저장하고
 같은 영상·버전·모드의 중복 요청은 최초 결과를 유지합니다. 서버 처리 시간은 콘솔에 `duration=...ms`로 출력합니다.
+
+### 대시보드 이력 조회
+
+새로고침 후에는 아래 조회 API로 저장된 목록과 그래프를 다시 구성할 수 있습니다.
+
+```bash
+curl 'http://localhost:8000/api/v1/videos/predictions?mode=simulation&page=1&page_size=20'
+curl 'http://localhost:8000/api/v1/monitoring/drift?mode=simulation&model_version=1&page=1&page_size=20'
+```
+
+두 API의 공통 파라미터는 `page`(기본 1, 1 이상), `page_size`(기본 20, 1~100),
+`mode`(`live` 또는 `simulation`), `model_version`(문자열)입니다.
+필터를 생략하면 모든 모드·버전을 반환하며, 두 필터를 함께 지정하면 둘 다 일치하는 기록만 반환합니다.
+현재 활성 모델 버전으로 자동 제한하지 않으므로 모델 교체 후에도 v1 이력을 조회할 수 있습니다.
+
+응답은 모두 `items`, `total`, `page`, `page_size`를 갖습니다. `total`은 필터 적용 후 전체 개수입니다.
+이력이 없거나 페이지 범위를 넘으면 `items=[]`이며, 잘못된 파라미터에는 422를 반환합니다.
+
+예측 이력의 각 항목에는 다음 필드가 있습니다.
+
+- `prediction_id`, `video_id`, `model_version`, `mode`
+- `predicted_views_day7`: 당시 저장한 예상 조회수
+- `target_views_day7`: 등록된 실제 조회수, 아직 없으면 `null`
+- `predicted_at`, `observed_at`: 예측·실제값 등록 시각, 미등록 실제값 시각은 `null`
+- `block_id`: 포함된 평가 묶음 ID, 아직 평가하지 않았으면 `null`
+
+최신 예측부터 정렬하고 동일 시각이면 나중에 저장한 기록부터 반환합니다.
+동일 영상도 모델 버전이나 모드가 다르면 별도 예측 기록으로 표시됩니다.
+
+드리프트 이력의 각 항목에는 다음 필드가 있습니다.
+
+- `block_id`, `model_version`, `mode`, `video_ids`
+- `baseline_rmsle`, `rmsle`, `threshold`
+- `status`: `ok`, `warning`, `retrain_review`
+- `consecutive_exceeds`: 그 묶음까지의 연속 초과 횟수
+
+최신 `block_id`부터 반환합니다. 그래프는 필요한 페이지를 모은 뒤 `block_id` 오름차순으로 정렬하세요.
+완료된 평가만 반환하며 대기 중 영상과 재학습 결과는 포함하지 않습니다. 과거 기준값·판정을
+현재 모델 설정으로 다시 계산하지 않습니다. 재학습 전후 수치와 교체 여부는 기존 실행 API의 응답을 사용하세요.
+
+조회는 저장된 SQLite를 읽기만 하며 모델 추론·드리프트 평가·재학습을 실행하지 않습니다.
+새 DB를 만들지도 않습니다. 시연 모드에서는 화면 새로고침 후 이력이 유지되지만,
+서버 재시작으로 시연 폴더를 초기화하면 조회 결과도 빈 목록으로 돌아갑니다.
 
 ## 저장 구조와 테스트
 

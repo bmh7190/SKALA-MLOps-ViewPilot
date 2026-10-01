@@ -1,5 +1,6 @@
 """CSV와 API가 함께 사용하는 영상 데이터 계약."""
 from datetime import datetime, timezone
+from typing import Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -79,3 +80,37 @@ class TrainingRequest(BaseModel):
     mode: str = Field(default="initial", pattern="^(initial|fine_tune)$")
     epochs: int = Field(default=100, ge=1, le=300)
     patience: int = Field(default=10, ge=1, le=100)
+
+
+class PredictionHistoryItem(PredictResponse):
+    mode: Literal["live", "simulation"]
+    target_views_day7: int | None
+    predicted_at: AwareDatetime
+    observed_at: AwareDatetime | None
+    block_id: int | None
+
+
+class DriftHistoryItem(BaseModel):
+    block_id: int
+    model_version: str
+    mode: Literal["live", "simulation"]
+    baseline_rmsle: float
+    rmsle: float
+    threshold: float
+    status: Literal["ok", "warning", "retrain_review"]
+    consecutive_exceeds: int
+    video_ids: list[str]
+
+
+class HistoryPage(BaseModel):
+    total: int
+    page: int
+    page_size: int
+
+
+class PredictionHistoryResponse(HistoryPage):
+    items: list[PredictionHistoryItem]
+
+
+class DriftHistoryResponse(HistoryPage):
+    items: list[DriftHistoryItem]

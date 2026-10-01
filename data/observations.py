@@ -178,3 +178,50 @@ def recent_drift_rows(version: str, mode: str) -> list[dict]:
             tuple(b["id"] for b in blocks),
         ).fetchall()
     return [{**json.loads(r["inputs"]), "target_views_day7": r["actual"]} for r in records]
+
+
+def read_history(table: str, *, page: int, page_size: int, mode=None, model_version=None):
+    """저장된 이력만 읽는다. 조회 요청으로 DB 생성·평가·재학습을 실행하지 않는다."""
+    ordering = {"forecasts": "predicted_at DESC, rowid DESC", "evaluation_blocks": "id DESC"}
+    if table not in ordering:
+        raise ValueError("지원하지 않는 이력입니다.")
+    if not OBSERVATION_DB.exists():
+        return 0, []
+    conditions, parameters = [], []
+    for column, value in (("mode", mode), ("model_version", model_version)):
+        if value is not None:
+            conditions.append(f"{column} = ?")
+            parameters.append(value)
+    where = " WHERE " + " AND ".join(conditions) if conditions else ""
+    # 읽기 전용 연결과 동일한 읽기 트랜잭션으로 전체 개수·현재 페이지를 조회한다.
+    db = sqlite3.connect(f"{OBSERVATION_DB.resolve().as_uri()}?mode=ro", uri=True, timeout=30)
+    db.row_factory = sqlite3.Row
+    try:
+        db.execute("BEGIN")
+        total = db.execute(f"SELECT COUNT(*) FROM {table}{where}", parameters).fetchone()[0]
+        records = db.execute(
+            f"SELECT * FROM {table}{where} ORDER BY {ordering[table]} LIMIT ? OFFSET ?",
+            [*parameters, page_size, (page - 1) * page_size],
+        ).fetchall()
+        return total, records
+    finally:
+        db.close()
+
+
+def prediction_history(*, page=1, page_size=20, mode=None, model_version=None):
+    total, records = read_history("forecasts", page=page, page_size=page_size,
+                                  mode=mode, model_version=model_version)
+    items = [{**response_for(row), "mode": row["mode"], "target_views_day7": row["actual"],
+              "predicted_at": row["predicted_at"], "observed_at": row["observed_at"],
+              "block_id": row["block_id"]} for row in records]
+    return {"items": items, "total": total, "page": page, "page_size": page_size}
+
+
+def drift_history(*, page=1, page_size=20, mode=None, model_version=None):
+    total, records = read_history("evaluation_blocks", page=page, page_size=page_size,
+                                  mode=mode, model_version=model_version)
+    # 당시 저장한 기준값·판정을 반환한다. 현재 모델이나 환경변수로 다시 계산하지 않는다.
+    items = [{"block_id": row["id"], "model_version": row["model_version"],
+              "mode": row["mode"], "baseline_rmsle": row["baseline"],
+              **json.loads(row["result"])} for row in records]
+    return {"items": items, "total": total, "page": page, "page_size": page_size}

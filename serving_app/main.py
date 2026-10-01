@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from serving_app import model_loader
 from serving_app.config import DEMO_MODE, LOG_DIR, PROJECT_DIR, baseline_rmsle, optional_number
-from serving_app.routers import data, health, logs, predict, simulations, training
+from serving_app.routers import data, health, history, logs, predict, simulations, training
 
 logger = logging.getLogger("aiops")
 
@@ -80,7 +80,7 @@ async def missing_prediction(request: Request, error: LookupError):
     return JSONResponse(status_code=404, content={"detail": str(error)})
 
 
-for router in (predict.router, data.router, training.router, simulations.router, health.router, logs.router):
+for router in (predict.router, history.router, data.router, training.router, simulations.router, health.router, logs.router):
     app.include_router(router)
 
 # API보다 뒤에 등록해야 /api/v1 경로가 정적 파일로 처리되지 않는다.

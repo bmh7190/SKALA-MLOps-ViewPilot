@@ -71,3 +71,10 @@ Swagger는 영상 성과, 데이터셋, 모델 운영, 시뮬레이션, 상태 �
 정상 버튼은 `POST /api/v1/simulations/normal/run`, 드리프트 버튼은 `POST /api/v1/simulations/drift/run`이다.
 두 API는 본문 없이 독립 실행하며, 정상 후 드리프트도 가능하다. 중복·동시 실행은 409로 안내한다.
 CLI에는 `--scenario normal|drift|both`를 추가했다. 대시보드 파일은 수정하지 않았다.
+
+## 대시보드 이력 조회
+
+`GET /api/v1/videos/predictions`와 `GET /api/v1/monitoring/drift`를 추가했다.
+공통으로 페이지·페이지 크기와 모드·모델 버전 필터를 사용하며, 전체 개수와 해당 페이지 목록을 반환한다.
+예측은 당시 예측·등록된 실제값을, 드리프트는 저장된 기준값과 묶음 판정을 반환한다.
+읽기 전용 SQLite 연결을 사용하므로 조회가 평가나 재학습을 유발하지 않는다.
