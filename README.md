@@ -8,9 +8,9 @@ train → validation으로 모델 선택 → baseline_normal로 B 계산 및 수
                                        ↓
                           test_normal → test_drift
                                        ↓
-                         경보 → 별도 데이터로 재학습
+                         경보 → test_drift 앞 60개로 재학습
                                        ↓
-                         검증 통과 시 교체 / 실패 시 유지
+                         뒤 60개에서 RMSLE 개선 시 교체 / 아니면 유지
 ```
 
 대시보드는 변경하지 않았습니다. API 확인은 `/docs`를 사용하세요.
@@ -34,7 +34,7 @@ cp .env.example .env
 - `validation.csv`: 600개, 조기 종료와 최적 가중치 선택
 - `baseline_normal.csv`: 30개, 선택된 모델의 기준 RMSLE 계산
 - `test_normal.csv`: 120개, 정상 운영 30개 묶음 4개
-- `test_drift.csv`: 120개, 드리프트 운영 30개 묶음 4개
+- `test_drift.csv`: 120개, 앞 60개는 감지·재학습, 뒤 60개는 검증
 
 원본 데이터 안내와 생성 보고서도 같은 폴더에 포함했습니다. 실제 YouTube 수집 데이터가 아닌
 합성 데이터입니다. 해당 폴더의 `smoke_test_report.json`은 데이터 제작자의 **선형회귀** 점검 결과이며
@@ -99,12 +99,15 @@ API 문서: http://localhost:8000/docs
 python scripts/run_scenarios.py --url http://localhost:8000
 ```
 
-스크립트는 `test_normal` 4묶음 다음 `test_drift` 4묶음을 전송합니다.
+스크립트는 `test_normal` 4묶음 다음 `test_drift` 앞 60개를 2묶음으로 전송합니다.
+두 번째 드리프트 요청에는 뒤 60개를 `retraining_validation`으로 따로 전달합니다.
+이 검증 영상은 드리프트 평가 묶음에 포함하지 않습니다.
 결과를 `runtime/scenario_report.json`에 저장합니다.
 
 - 정상: 묶음별 RMSLE가 임계값 이내이면 경보·재학습 없이 기존 모델 유지
 - 드리프트 첫 초과: `warning`
-- 두 묶음 연속 초과: `retrain_review`, 자동 재학습이 켜져 있으면 후보 학습 시도
+- 두 묶음 연속 초과: `retrain_review`, 앞 60개로 실제 재학습하고 뒤 60개에서 모델 비교
+- `AUTO_RETRAIN=false`이면 `manual_review`로 종료하고 재학습하지 않음
 - 기준 이하 복귀: 연속 초과 횟수 초기화
 - 새 모델 교체 성공: 새 기준값 설정이 필요하므로 시나리오 실행 중단
 
@@ -115,44 +118,39 @@ python scripts/run_scenarios.py --url http://localhost:8000
 시간 이벤트 재생은 하지 않으며, 운영의 예측·실제값 저장 공간과 분리해 집계합니다.
 실제 운영은 `/predict`에서 먼저 예측을 저장하고 `/observations`에서 나중에 실제값을 등록합니다.
 
-같은 runtime에서 같은 영상을 다시 보내도 중복 평가하지 않습니다. 전체 실험을 재현하려면
+같은 runtime에서 같은 영상을 다시 보내도 중복 평가하지 않습니다. 모델이 교체된 뒤에도 같은 120개로 성능을 재평가하지 않습니다. 전체 실험을 재현하려면
 새 터미널에서 `export VIEWPILOT_RUNTIME_DIR="$PWD/runtime/replay-2"`로 새 저장 위치를 지정하고
 학습부터 반복하세요. 학습·기준값 계산·서버 실행에 같은 저장 위치를 사용해야 합니다.
 
 ## 재학습 데이터와 교체 판정
 
-**제공된 5개 파일에는 별도의 변화 후 재학습·검증 데이터가 없습니다.**
-따라서 기본 시나리오에서는 드리프트를 감지한 뒤 `retraining.status=deferred`와 준비할 데이터 안내가 나옵니다.
-테스트 영상을 학습에 자동 편입하거나, 같은 영상으로 다시 평가해 개선됐다고 판정하지 않습니다.
+기본 시나리오는 추가 CSV 없이 실행됩니다. `test_drift.csv`를 게시 시점 순으로 나눕니다.
 
-새 데이터를 준비하면 `.env`에 다음 경로를 지정합니다. 두 파일 모두 기존 14개 컬럼을 사용합니다.
+1. 앞 60개를 기존 모델로 평가하고, 두 묶음 연속 초과하면 이 60개로 추가 학습합니다.
+2. 뒤 60개는 가중치 학습에 넣지 않습니다. 검증 손실로 최적 가중치를 선택하고 두 모델을 비교합니다.
+3. 같은 검증 60개에서 후보 RMSLE가 기존 모델보다 **엄격히 낮으면** 교체합니다. 동점이나 악화는 유지합니다.
 
-```dotenv
-AUTO_RETRAIN=true
-RETRAIN_TRAIN_CSV=data/adaptation/train.csv
-RETRAIN_VALIDATION_CSV=data/adaptation/validation.csv
-```
+기존 모델을 복제하고 전처리를 고정한 채 학습률 `1e-4`로 최대 10 epoch 추가 학습합니다.
+드리프트 임계값은 재학습을 시작하는 신호이며 배포 상한으로 사용하지 않습니다.
+`DEPLOY_RMSLE_GATE`는 최초 모델 선택에만 적용되고 재학습 교체에는 적용되지 않습니다.
 
-또는 API로 `retrain_train`, `retrain_validation` 용도의 CSV를 각각 업로드할 수 있습니다.
-환경변수에 경로를 지정했다면 그 파일이 업로드보다 우선합니다. Git에 포함하려는 추가 합성 CSV는
-`data/` 아래에 두고, API 업로드 결과는 `runtime/`에만 보관합니다.
+**이 실험은 과거 데이터로 수행하는 재학습·모델 선택 시나리오입니다.**
+제공 CSV에서 60번째 영상은 2025-09-17 09:00 UTC, 61번째 영상은 같은 날 12:00 UTC에 게시됐습니다.
+첫 검증 영상의 3일차에는 마지막 학습 영상의 7일 정답이 아직 없으므로, 60/60 분할을
+실제 당시의 예측 실험으로 해석할 수 없습니다. 모든 정답이 확보된 후 비교하며, 검증 세트는
+가중치 선택에도 사용되므로 교체 후의 독립적인 성능 평가를 의미하지 않습니다.
 
-재학습 파일은 기존 학습·검증 범위보다 이후 영상으로 구성하고, 서로 중복되지 않게 준비해야 합니다.
-베이스라인이나 이미 운영·시뮬레이션에서 평가한 영상도 재사용할 수 없습니다.
-학습 30개·검증 10개 이상이며, 최초 검증 예측 시점에 학습 정답이 확보될 수 있도록 시간 간격을 검사합니다.
-이 최소 행 수는 실행 조건이며 모델 품질을 보장하지 않습니다.
+교체하면 응답에 새 버전과 `baseline_required=true`가 표시됩니다. 시나리오는 여기서 끝나며
+새 모델에 맞는 대표 영상 30개로 B를 수동 계산·설정한 뒤 운영 모니터링을 재개합니다.
+교체된 모델에 이전 B를 자동 적용하지 않습니다. 새 모델의 기준값이나 교체 후 성능을
+학습·검증에 사용한 120개로 다시 측정하지 않습니다.
 
-새 묶음의 경보가 발생하면 기존 모델을 복제하고, 전처리를 고정한 채 학습률 `1e-4`로 최대 10 epoch 추가 학습합니다.
-후보와 기존 모델을 같은 별도 검증 영상으로 비교해 두 조건을 모두 충족해야 교체합니다.
-
-```text
-후보 RMSLE < 기존 모델 RMSLE
-후보 RMSLE ≤ 배포 상한
-```
-
-기본 배포 상한은 현재 모델 B의 `max(B*1.3, B+0.1)`입니다. `DEPLOY_RMSLE_GATE`로 따로 지정할 수 있습니다.
-실패하면 기존 모델·가중치·활성 버전을 유지합니다. 데이터 보충 후 즉시 재시도하려면
-`POST /training`에 `mode: fine_tune`을 보내거나 다음 새 평가 묶음을 사용합니다.
+일반 운영용 재학습은 기존처럼 `RETRAIN_TRAIN_CSV`, `RETRAIN_VALIDATION_CSV` 또는
+`retrain_train`, `retrain_validation` 용도 업로드를 사용할 수 있습니다. 두 파일 모두 14개 컬럼입니다.
+실제값이 확보된 관측 영상은 저장된 입력·정답과 일치하면 재학습에 사용할 수 있습니다.
+검증에는 아직 관측·학습·기준값 계산에 사용하지 않은 영상을 지정합니다.
+일반 재학습은 첫 검증 예측 시점에 학습 정답을 알 수 있도록 게시 시점 간격도 검사합니다.
+학습 최소 30개·검증 최소 10개이며, 이 수량이 품질을 보장하는 것은 아닙니다.
 
 ## CSV와 모델 입력
 
@@ -188,7 +186,7 @@ RETRAIN_VALIDATION_CSV=data/adaptation/validation.csv
 - `POST /predict`: 정답을 제외한 영상 한 행을 JSON으로 전달
 - `POST /predict/csv`: 예측용 CSV
 - `POST /observations`: `{"prediction_id":"...","target_views_day7":12000}`
-- `POST /predict/batch-test`: `{"videos":[정답 포함 영상 행, ...]}`
+- `POST /predict/batch-test`: `{"videos":[정답 포함 영상 행, ...]}`; 선택 필드 `retraining_validation`에 별도 검증 행 전달
 - `POST /predict/batch-test/csv`: 정답 포함 시뮬레이션 CSV
 - `GET /health`, `GET /logs/aiops.log`: 모델·설정 상태와 로그
 
@@ -203,7 +201,7 @@ CSV 업로드는 multipart `file` 필드, UTF-8, 최대 10MB입니다. JSON 배�
 - `data/observations.py`: SQLite 예측·실제값·평가 묶음
 - `serving_app/train_and_register.py`: 학습·조기 종료·모델 선택
 - `serving_app/model_loader.py`: 모델·전처리 버전 로딩과 캐시 교체
-- `serving_app/monitoring/`: 드리프트 판정과 별도 데이터 재학습 연결
+- `serving_app/monitoring/`: 드리프트 판정과 재학습·검증 연결
 
 각 MLflow run별로 `model.keras`, `preprocessor.json`, `metadata.json`을 저장합니다.
 검증 후 `production.json`을 원자적으로 갱신하며, 다음 요청에서 새 모델을 완전히 로드한 뒤 캐시를 교체합니다.
@@ -213,7 +211,7 @@ python -m unittest discover -s tests -v
 python -m tests.smoke_training
 ```
 
-테스트는 임시 runtime을 사용합니다. smoke test는 실제 TensorFlow 최초·추가 학습과 MLflow 로딩을 확인하고,
+테스트는 임시 runtime을 사용합니다. smoke test는 실제 TensorFlow 최초 학습과 MLflow 로딩, 동점 후보의 교체 거절을 확인하고,
 교체 성공 분기에는 재현 가능한 고정 출력 후보를 사용합니다. 실제 데이터에서 재학습이 개선됐다는 증거는 아닙니다.
 
 Docker 구성 확인 및 실행:

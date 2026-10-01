@@ -74,3 +74,18 @@ class ApiTests(unittest.TestCase):
     def test_duplicate_video_batch_is_rejected(self):
         response = self.client.post("/predict/batch-test", json={"videos": [video(), video()]})
         self.assertEqual(response.status_code, 422)
+
+    def test_scenario_validation_stays_out_of_drift_records(self):
+        validation = [video(i) for i in range(100, 160)]
+        with patch('serving_app.train_and_register.fine_tune', return_value={'promoted': True, 'version': '2'}) as fit, \
+             patch.dict('os.environ', {'AUTO_RETRAIN': 'true'}):
+            first = self.client.post('/predict/batch-test', json={'videos': [video(i) for i in range(30)]})
+            self.assertEqual(first.json()['drift_check']['status'], 'warning')
+            response = self.client.post('/predict/batch-test', json={
+                'videos': [video(i) for i in range(30, 60)], 'retraining_validation': validation})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(fit.call_args.args[0]), 60)
+        from serving_app.schemas import LabeledVideo
+        self.assertEqual(fit.call_args.args[1], [LabeledVideo.model_validate(r).model_dump(mode='json') for r in validation])
+        self.assertEqual(len(observations.recorded_video_ids()), 60)
+        self.assertTrue(response.json()['drift_check']['retraining']['baseline_required'])

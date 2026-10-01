@@ -52,7 +52,7 @@ def load_rows(csv_path: str | Path, require_target: bool = True) -> list[dict]:
     return parse_csv(Path(csv_path).read_text(encoding="utf-8-sig"), require_target)
 
 
-def validate_splits(training_rows: list[dict], validation_rows: list[dict]):
+def validate_splits(training_rows: list[dict], validation_rows: list[dict], *, retrospective=False):
     """지정된 두 파일을 그대로 사용하되 중복·시간 누수를 검사한다."""
     training = [LabeledVideo.model_validate(row) for row in training_rows]
     validation = [LabeledVideo.model_validate(row) for row in validation_rows]
@@ -66,7 +66,10 @@ def validate_splits(training_rows: list[dict], validation_rows: list[dict]):
         raise ValueError("게시 후 168시간이 지나지 않은 영상은 학습·검증할 수 없습니다.")
     first_validation = min(v.published_at for v in validation)
     last_training = max(v.published_at for v in training)
-    if last_training + timedelta(hours=168) > first_validation + timedelta(hours=72):
+    if last_training >= first_validation:
+        raise ValueError("검증 영상은 모든 학습 영상보다 나중에 게시되어야 합니다.")
+    # 과거 CSV 시나리오는 모든 정답을 확보한 뒤 비교한다. 실시간 재생에서는 4일 간격이 필요하다.
+    if not retrospective and last_training + timedelta(hours=168) > first_validation + timedelta(hours=72):
         raise ValueError("첫 검증 예측 시점에 학습 정답을 알 수 있도록 두 파일의 게시 시각을 분리하세요.")
     return ([v.model_dump(mode="json") for v in training],
             [v.model_dump(mode="json") for v in validation])

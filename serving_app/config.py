@@ -33,9 +33,5 @@ def baseline_rmsle(version: str | None = None) -> float | None:
 
 
 def deployment_gate(version: str | None = None) -> float | None:
-    gate = optional_number("DEPLOY_RMSLE_GATE")
-    if gate is not None:
-        return gate
-    # 최초 모델은 validation으로 선택한다. B가 아직 없어도 학습·저장할 수 있다.
-    baseline = baseline_rmsle(version) if version is not None else None
-    return max(baseline * 1.3, baseline + 0.1) if baseline is not None else None
+    # 선택 상한은 최초 모델에만 적용한다. 재학습은 동일 검증에서 개선 여부로 판단한다.
+    return optional_number("DEPLOY_RMSLE_GATE") if version is None else None

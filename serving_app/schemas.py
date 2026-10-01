@@ -59,6 +59,8 @@ class PredictResponse(BaseModel):
 
 class BatchTestRequest(BaseModel):
     videos: list[LabeledVideo] = Field(min_length=1, max_length=1000)
+    # 시나리오에서만 사용한다. 이 영상들은 드리프트 평가나 가중치 학습에 넣지 않는다.
+    retraining_validation: list[LabeledVideo] | None = Field(default=None, min_length=10, max_length=1000)
 
     @field_validator("videos")
     @classmethod

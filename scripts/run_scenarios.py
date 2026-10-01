@@ -1,4 +1,4 @@
-"""같은 모델로 정상 4묶음 → 드리프트 4묶음을 API에서 평가한다."""
+"""정상 120개 → 드리프트 앞 60개 감지·재학습 → 뒤 60개 검증을 실행한다."""
 import argparse
 import json
 import sys
@@ -7,10 +7,19 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from data.features import load_rows
+from data.features import load_rows, validate_splits
+
+
+def split_drift_rows(rows):
+    """영상 ID를 섞지 않고 게시 순서로 60개씩 분리한다."""
+    ordered = sorted(rows, key=lambda row: row["published_at"])
+    if len(ordered) != 120:
+        raise ValueError("드리프트 시나리오는 영상 120개가 필요합니다.")
+    return validate_splits(ordered[:60], ordered[60:], retrospective=True)
 
 
 def run_scenarios(url: str, data_dir: Path) -> dict:
+    training, validation = split_drift_rows(load_rows(data_dir / "test_drift.csv"))
     response = requests.get(f"{url}/health", timeout=30)
     response.raise_for_status()
     health = response.json()
@@ -18,14 +27,20 @@ def run_scenarios(url: str, data_dir: Path) -> dict:
         raise ValueError("모델을 선택하고 해당 버전의 베이스라인을 설정한 뒤 서버를 실행하세요.")
     version = health["model_version"]
     report = {"model_version": version, "baseline_rmsle": health["baseline_rmsle"],
-              "threshold": health["drift_threshold"], "events": []}
+              "threshold": health["drift_threshold"], "evaluation_mode": "retrospective",
+              "retraining_video_ids": [row["video_id"] for row in training],
+              "validation_video_ids": [row["video_id"] for row in validation], "events": []}
     for name in ["test_normal", "test_drift"]:
-        rows = sorted(load_rows(data_dir / f"{name}.csv"), key=lambda row: row["published_at"])
+        rows = (training if name == "test_drift" else
+                sorted(load_rows(data_dir / "test_normal.csv"), key=lambda row: row["published_at"]))
         if len(rows) % 30:
             raise ValueError("시나리오 CSV는 30개 단위의 완전한 묶음으로 준비하세요.")
         for start in range(0, len(rows), 30):
-            response = requests.post(f"{url}/predict/batch-test",
-                                     json={"videos": rows[start:start + 30]}, timeout=600)
+            payload = {"videos": rows[start:start + 30]}
+            if name == "test_drift" and start == 30:
+                # 검증 60개는 드리프트 묶음에 전송하지 않고 재학습 비교용으로만 전달한다.
+                payload["retraining_validation"] = validation
+            response = requests.post(f"{url}/predict/batch-test", json=payload, timeout=600)
             response.raise_for_status()
             check = response.json()["drift_check"]
             if check["model_version"] != version:
@@ -38,6 +53,7 @@ def run_scenarios(url: str, data_dir: Path) -> dict:
             # 교체가 성공하면 새 모델의 B를 다시 설정해야 하므로 여기서 중단한다.
             if check.get("retraining", {}).get("promoted"):
                 report["stopped_after_promotion"] = True
+                report["baseline_required"] = True
                 return report
     return report
 

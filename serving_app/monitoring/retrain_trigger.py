@@ -14,7 +14,7 @@ logger = logging.getLogger("aiops")
 
 
 def retraining_data():
-    """드리프트 테스트 영상을 합치지 않고 명시적으로 준비한 두 파일만 읽는다."""
+    """일반 재학습 API에서 지정한 학습·검증 파일을 읽는다."""
     paths = []
     for setting, purpose in [("RETRAIN_TRAIN_CSV", "retrain_train"),
                              ("RETRAIN_VALIDATION_CSV", "retrain_validation")]:
@@ -22,12 +22,12 @@ def retraining_data():
         try:
             path = Path(value) if value else latest_upload(purpose)
         except FileNotFoundError as error:
-            raise FileNotFoundError("별도의 재학습용 CSV와 검증용 CSV가 필요합니다. 테스트 영상은 자동 재사용하지 않습니다.") from error
+            raise FileNotFoundError("재학습용 CSV와 검증용 CSV를 지정하세요. 시나리오는 배치 요청에 검증 영상을 따로 전달합니다.") from error
         paths.append(path if path.is_absolute() else PROJECT_DIR / path)
     return load_rows(paths[0]), load_rows(paths[1])
 
 
-def check_and_trigger(version: str, mode: str) -> dict:
+def check_and_trigger(version: str, mode: str, validation_rows=None) -> dict:
     baseline = baseline_rmsle(version)
     if baseline is not None:
         check_configured_baseline(version, baseline)
@@ -52,9 +52,15 @@ def check_and_trigger(version: str, mode: str) -> dict:
         from serving_app.train_and_register import fine_tune
 
         logger.info("retrain started: mode=%s model=v%s", mode, version)
-        training, validation = retraining_data()
-        result = fine_tune(training, validation, expected_version=version)
-        check["retraining"] = {"status": "completed", **result}
+        if mode == "simulation" and validation_rows is not None:
+            # 앞 60개는 감지 후 학습에 사용하고, 요청에 따로 전달한 뒤 60개는 검증에만 사용한다.
+            training = observations.recent_drift_rows(version, mode)
+            result = fine_tune(training, validation_rows, expected_version=version, retrospective=True)
+        else:
+            training, validation = retraining_data()
+            result = fine_tune(training, validation, expected_version=version)
+        check["retraining"] = {"status": "completed", **result,
+                               "baseline_required": result["promoted"]}
     except (ValueError, FileNotFoundError, RuntimeError) as error:
         logger.warning("retrain deferred: %s", error)
         check["retraining"] = {"status": "deferred", "reason": str(error)}

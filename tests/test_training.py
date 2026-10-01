@@ -41,7 +41,7 @@ class TrainingTests(unittest.TestCase):
 
     def test_baseline_does_not_transfer_to_new_model_version(self):
         with patch.dict("os.environ", {"BASELINE_RMSLE": "0.2", "BASELINE_MODEL_VERSION": "1", "DEPLOY_RMSLE_GATE": ""}):
-            self.assertAlmostEqual(deployment_gate("1"), 0.3)
+            self.assertIsNone(deployment_gate("1"))
             self.assertIsNone(baseline_rmsle("2"))
             self.assertIsNone(deployment_gate("2"))
 
@@ -80,3 +80,35 @@ class TrainingTests(unittest.TestCase):
              patch("serving_app.monitoring.retrain_trigger.retraining_data", return_value=(training, validation)):
             check = check_and_trigger("1", "simulation")
         self.assertFalse(check["retraining"]["promoted"])
+
+    def test_labeled_observations_can_train_but_not_validate(self):
+        training = [video(i) for i in range(40)]
+        validation = [video(i) for i in range(50, 60)]
+        current = SimpleNamespace(metadata={"used_video_ids": [], "last_published_at": "2019-01-01T00:00:00+00:00"})
+        observations.save_predictions(training, [10000] * 40, "1", "simulation")
+        self.assertEqual(len(prepare_data(training, validation, current)[0]), 40)
+        changed = [{**row, "target_views_day7": 15000} for row in training]
+        with self.assertRaisesRegex(ValueError, "실제값"):
+            prepare_data(changed, validation, current)
+        observations.save_predictions(validation, [10000] * 10, "1", "simulation")
+        with self.assertRaisesRegex(ValueError, "검증"):
+            prepare_data(training, validation, current)
+
+    def test_drift_threshold_is_not_a_retraining_deployment_gate(self):
+        with patch.dict("os.environ", {"BASELINE_RMSLE": "0.1", "BASELINE_MODEL_VERSION": "1", "DEPLOY_RMSLE_GATE": "0"}):
+            self.assertEqual(deployment_gate(), 0)
+            self.assertIsNone(deployment_gate("1"))
+
+    def test_scenario_retrains_only_on_two_detected_blocks(self):
+        validation = [video(i) for i in range(70, 130)]
+        observations.save_predictions([video(i) for i in range(60)], [8400] * 60, "1", "simulation")
+        with patch.dict("os.environ", {"BASELINE_RMSLE": "0.1", "BASELINE_MODEL_VERSION": "1", "AUTO_RETRAIN": "true"}), \
+             patch("serving_app.monitoring.retrain_trigger.check_configured_baseline"), \
+             patch("serving_app.model_loader.get_model", return_value=SimpleNamespace(version="1")), \
+             patch("serving_app.train_and_register.fine_tune", return_value={"promoted": True, "version": "2"}) as fit:
+            check = check_and_trigger("1", "simulation", validation_rows=validation)
+        training = fit.call_args.args[0]
+        self.assertEqual([r["video_id"] for r in training], [f"video_{i}" for i in range(60)])
+        fit.assert_called_once_with(training, validation, expected_version="1", retrospective=True)
+        self.assertTrue(check["retraining"]["baseline_required"])
+        self.assertTrue({r["video_id"] for r in validation}.isdisjoint(observations.recorded_video_ids()))

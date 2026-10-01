@@ -49,17 +49,19 @@ def observe(request: ObservationRequest):
     return {"prediction_id": request.prediction_id, "drift_check": check}
 
 
-def evaluate_videos(rows: list[dict]) -> dict:
+def evaluate_videos(rows: list[dict], validation_rows=None) -> dict:
     # 정답을 알고 있는 과거 CSV 테스트는 운영 예측·평가 기록과 분리해 보관한다.
     predictions = predict_rows(rows, mode="simulation")
     version = predictions[0]["model_version"]
-    check = check_and_trigger(version, "simulation")
+    check = check_and_trigger(version, "simulation", validation_rows=validation_rows)
     return {"predictions": predictions, "drift_check": check}
 
 
 @router.post("/predict/batch-test")
 def batch_test(request: BatchTestRequest):
-    return evaluate_videos([v.model_dump(mode="json") for v in request.videos])
+    validation = ([v.model_dump(mode="json") for v in request.retraining_validation]
+                  if request.retraining_validation is not None else None)
+    return evaluate_videos([v.model_dump(mode="json") for v in request.videos], validation)
 
 
 @router.post("/predict/batch-test/csv")

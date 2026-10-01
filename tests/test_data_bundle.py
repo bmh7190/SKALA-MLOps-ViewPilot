@@ -24,3 +24,14 @@ class DataBundleTests(unittest.TestCase):
         processor = VideoPreprocessor.fit(training)
         self.assertEqual(processor.categories, ["gaming", "education", "entertainment", "lifestyle"])
         self.assertEqual((len(processor.transform(training[0])), processor.n_features), (3, 8))
+
+    def test_drift_scenario_split_is_retrospective_and_disjoint(self):
+        from scripts.run_scenarios import split_drift_rows
+        rows = load_rows(Path(__file__).parents[1] / 'data/synthetic/test_drift.csv')
+        training, validation = split_drift_rows(list(reversed(rows)))
+        self.assertEqual((len(training), len(validation)), (60, 60))
+        self.assertTrue({r['video_id'] for r in training}.isdisjoint(r['video_id'] for r in validation))
+        with self.assertRaisesRegex(ValueError, '예측 시점'):
+            validate_splits(training, validation)
+        with self.assertRaises(ValueError):
+            split_drift_rows(rows[:60])

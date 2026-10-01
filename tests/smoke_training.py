@@ -30,7 +30,11 @@ def main():
     original_weights = [w.copy() for w in original.keras_model.get_weights()]
 
     os.environ["DEPLOY_RMSLE_GATE"] = "0"
-    rejected = fine_tune([video(i) for i in range(120, 190)], [video(i) for i in range(200, 220)], epochs=1)
+    # 가중치를 그대로 둔 후보는 기존 모델과 동점이므로 교체하지 않는다.
+    with patch("serving_app.train_and_register.train_model", return_value={
+        "epochs_completed": 0, "best_epoch": 0, "best_validation_loss": 0.0
+    }):
+        rejected = fine_tune([video(i) for i in range(120, 190)], [video(i) for i in range(200, 220)], epochs=1)
     assert not rejected["promoted"], rejected
     assert PRODUCTION_FILE.read_text() == pointer
     assert all(np.array_equal(before, after) for before, after in zip(original_weights, original.keras_model.get_weights()))
@@ -42,7 +46,7 @@ def main():
         final.set_weights([np.zeros_like(kernel), np.full_like(bias, math.log1p(12000))])
         return {"epochs_completed": 1, "best_epoch": 1, "best_validation_loss": 0.0}
 
-    os.environ["DEPLOY_RMSLE_GATE"] = "10"
+    os.environ["DEPLOY_RMSLE_GATE"] = "0"
     with patch("serving_app.train_and_register.train_model", side_effect=fixed_candidate):
         promoted = fine_tune([video(i) for i in range(120, 190)], [video(i) for i in range(200, 220)], epochs=1)
     assert promoted["promoted"], promoted
@@ -53,7 +57,7 @@ def main():
     with patch.dict(os.environ, {"MODEL_SOURCE": "mlflow"}), patch.object(model_loader, "_cache_pointer", None):
         restored = model_loader.get_model()
         assert restored.predict_one(video(200)) == 12000
-    print("PASS: real initial fit, failed-gate retention, untouched serving weights, deterministic promotion, local and MLflow reload")
+    print("PASS: real initial fit, equal-score retention, untouched serving weights, deterministic promotion, local and MLflow reload")
 
 
 if __name__ == "__main__":

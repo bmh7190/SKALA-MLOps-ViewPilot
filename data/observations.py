@@ -156,9 +156,25 @@ def labeled_rows(mode: str) -> list[dict]:
 
 
 def recorded_video_ids() -> set[str]:
-    """이미 운영·시뮬레이션 평가에 사용한 영상은 별도 학습 데이터로 재사용하지 않는다."""
+    """이미 예측한 영상 ID. 재학습 검증 세트가 관측 데이터와 섞이지 않도록 검사한다."""
     if not OBSERVATION_DB.exists():
         return set()
     with connection() as db:
         records = db.execute("SELECT DISTINCT video_id FROM forecasts").fetchall()
     return {row["video_id"] for row in records}
+
+
+def recent_drift_rows(version: str, mode: str) -> list[dict]:
+    """드리프트를 발생시킨 마지막 두 평가 묶음의 정답 포함 영상 60개를 읽는다."""
+    with connection() as db:
+        blocks = db.execute(
+            "SELECT id, result FROM evaluation_blocks WHERE model_version=? AND mode=? ORDER BY id DESC LIMIT 2",
+            (version, mode),
+        ).fetchall()
+        if len(blocks) != 2 or any(json.loads(b["result"])["consecutive_exceeds"] < 1 for b in blocks):
+            raise ValueError("연속으로 임계값을 초과한 두 묶음이 필요합니다.")
+        records = db.execute(
+            "SELECT inputs, actual FROM forecasts WHERE block_id IN (?, ?) ORDER BY rowid",
+            tuple(b["id"] for b in blocks),
+        ).fetchall()
+    return [{**json.loads(r["inputs"]), "target_views_day7": r["actual"]} for r in records]

@@ -13,7 +13,7 @@ if __package__ in (None, ""):
 
 from data.baselines import baseline_video_ids
 from data.features import VideoPreprocessor, build_sequences, load_rows, validate_splits
-from data.observations import recorded_video_ids
+from data.observations import labeled_rows, recorded_video_ids
 from data.storage import latest_upload
 from serving_app import model_loader
 from serving_app.config import MODEL_DIR, MODEL_NAME, PRODUCTION_FILE, deployment_gate
@@ -52,11 +52,24 @@ def train_model(model, training, validation, preprocessor, epochs, patience):
             "best_validation_loss": float(min(history.history["val_loss"]))}
 
 
-def prepare_data(training_rows, validation_rows, current=None):
-    training, validation = validate_splits(training_rows, validation_rows)
+def prepare_data(training_rows, validation_rows, current=None, *, retrospective=False):
+    training, validation = validate_splits(training_rows, validation_rows, retrospective=retrospective)
     ids = {row["video_id"] for row in training + validation}
-    if ids & (baseline_video_ids() | recorded_video_ids()):
-        raise ValueError("기준값 계산 또는 운영 테스트에 사용한 영상은 학습·검증에 재사용할 수 없습니다.")
+    if ids & baseline_video_ids():
+        raise ValueError("기준값 계산 영상은 학습·검증에 재사용할 수 없습니다.")
+    recorded_ids = recorded_video_ids()
+    validation_ids = {row["video_id"] for row in validation}
+    if validation_ids & recorded_ids or (current is None and ids & recorded_ids):
+        raise ValueError("운영 테스트 영상은 최초 학습이나 재학습 검증에 재사용할 수 없습니다.")
+    # 정답이 도착한 관측 영상은 재학습할 수 있다. 저장된 입력·정답과 같은지 확인한다.
+    observed = {}
+    if ids & recorded_ids:
+        for mode in ("live", "simulation"):
+            for row in labeled_rows(mode):
+                observed[row["video_id"]] = row
+    for row in training:
+        if row["video_id"] in recorded_ids and observed.get(row["video_id"]) != row:
+            raise ValueError("재학습 영상은 저장된 입력·실제값과 같아야 합니다.")
     if current is not None:
         if ids & set(current.metadata["used_video_ids"]):
             raise ValueError("재학습에는 기존 모델의 학습·검증에 쓰지 않은 새 영상을 사용하세요.")
@@ -84,19 +97,19 @@ def promote_model(bundle_id, model_uri, sample_row):
 
 def train_and_register(train_path=None, validation_path=None, *, training_rows=None,
                        validation_rows=None, mode="initial", epochs=100, patience=10,
-                       expected_version=None):
+                       expected_version=None, retrospective=False):
     if mode not in {"initial", "fine_tune"} or not 1 <= epochs <= 300 or not 1 <= patience <= 100:
         raise ValueError("mode, epochs 또는 patience 설정을 확인하세요.")
     if not _training_lock.acquire(blocking=False):
         raise ValueError("다른 학습이 진행 중입니다. 완료 후 다시 시도하세요.")
     try:
         return _train(train_path, validation_path, training_rows, validation_rows,
-                      mode, epochs, patience, expected_version)
+                      mode, epochs, patience, expected_version, retrospective)
     finally:
         _training_lock.release()
 
 
-def _train(train_path, validation_path, training_rows, validation_rows, mode, epochs, patience, expected_version):
+def _train(train_path, validation_path, training_rows, validation_rows, mode, epochs, patience, expected_version, retrospective):
     current = model_loader.get_model() if PRODUCTION_FILE.exists() else None
     if expected_version is not None and (current is None or current.version != expected_version):
         raise ValueError("학습 준비 중 모델 버전이 변경되었습니다. 새 버전의 평가를 기다리세요.")
@@ -105,8 +118,6 @@ def _train(train_path, validation_path, training_rows, validation_rows, mode, ep
     if mode == "fine_tune" and current is None:
         raise ValueError("재학습 전에 최초 모델을 선택해야 합니다.")
     gate = deployment_gate(current.version if current else None)
-    if current is not None and gate is None:
-        raise ValueError("재학습 배포 상한 또는 현재 모델의 베이스라인을 먼저 설정하세요.")
 
     train_purpose = "retrain_train" if current else "train"
     validation_purpose = "retrain_validation" if current else "validation"
@@ -114,7 +125,7 @@ def _train(train_path, validation_path, training_rows, validation_rows, mode, ep
         training_rows = load_rows(train_path or latest_upload(train_purpose))
     if validation_rows is None:
         validation_rows = load_rows(validation_path or latest_upload(validation_purpose))
-    training, validation = prepare_data(training_rows, validation_rows, current)
+    training, validation = prepare_data(training_rows, validation_rows, current, retrospective=retrospective)
 
     import mlflow
     import mlflow.tensorflow
@@ -140,11 +151,13 @@ def _train(train_path, validation_path, training_rows, validation_rows, mode, ep
         predictions = candidate.predict_many(validation)
         score = compute_rmsle(actual, predictions)
         current_score = compute_rmsle(actual, current.predict_many(validation)) if current else None
-        # 최초 선택은 B 계산 전이다. 별도 상한이 없으면 최적 validation 가중치를 활성화한다.
-        promoted = (gate is None or score <= gate) and (current_score is None or score < current_score)
+        # 재학습 교체는 동일 검증에서의 개선 여부로 결정한다. 드리프트 임계값은 사용하지 않는다.
+        promoted = score < current_score if current else (gate is None or score <= gate)
         result = {"promoted": promoted, "rmsle": score, "current_rmsle": current_score,
                   "mae": sum(abs(a - p) for a, p in zip(actual, predictions)) / len(actual),
-                  "gate": gate, "training_count": len(training), "validation_count": len(validation),
+                  "gate": gate, "evaluation_mode": "retrospective" if retrospective else "time_separated",
+                  "deployment_rule": "lower_validation_rmsle" if current else "initial_selection",
+                  "training_count": len(training), "validation_count": len(validation),
                   "run_id": run.info.run_id, **selection}
         mlflow.log_params({"mode": mode, "max_epochs": epochs, "patience": patience,
                            "training_count": len(training), "validation_count": len(validation),
@@ -172,14 +185,15 @@ def _train(train_path, validation_path, training_rows, validation_rows, mode, ep
             result["version"] = promote_model(run.info.run_id, logged.model_uri, validation[0])
             logger.info("[OK] RMSLE=%.4f, production=v%s", score, result["version"])
         else:
-            logger.warning("[WARN] RMSLE=%.4f, gate failed; existing model retained", score)
+            logger.warning("[WARN] RMSLE=%.4f, selection failed; existing model retained", score)
         mlflow.set_tag("promoted", promoted)
         return result
 
 
-def fine_tune(training_rows, validation_rows, epochs=10, expected_version=None):
+def fine_tune(training_rows, validation_rows, epochs=10, expected_version=None, *, retrospective=False):
     return train_and_register(training_rows=training_rows, validation_rows=validation_rows,
-                              mode="fine_tune", epochs=epochs, expected_version=expected_version)
+                              mode="fine_tune", epochs=epochs, expected_version=expected_version,
+                              retrospective=retrospective)
 
 
 def main():
