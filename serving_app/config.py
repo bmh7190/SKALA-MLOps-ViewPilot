@@ -36,5 +36,5 @@ def baseline_rmsle(version: str | None = None) -> float | None:
 
 
 def deployment_gate(version: str | None = None) -> float | None:
-    # 선택 상한은 최초 모델에만 적용한다. 재학습은 동일 검증에서 개선 여부로 판단한다.
+    # 절대 상한은 최초 모델에만 적용한다. Naive·기존 모델 비교는 deployment.py에서 수행한다.
     return optional_number("DEPLOY_RMSLE_GATE") if version is None else None
