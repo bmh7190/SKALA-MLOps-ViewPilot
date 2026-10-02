@@ -1,10 +1,20 @@
 import { api } from "./api.js";
+import { errorMetrics, selectVideos, relatedBlocks, fetchAllPages } from "./view-metrics.js";
 
 const $ = id => document.getElementById(id);
 const state = {
   health: null, initialized: false, busy: false, completed: new Set(),
   predictionPage: 1, driftPage: 1, predictionTotal: 0, driftTotal: 0,
+  videos: [], blocks: [], reviewVideo: null,
 };
+const operations = new URLSearchParams(location.search).get('view') === 'operations';
+let displayMetadata = {};
+const categoryNames = {gaming:'게임',education:'교육',entertainment:'엔터테인먼트',lifestyle:'라이프스타일'};
+document.body.classList.toggle('operations-page', operations);
+if (operations) {
+  document.querySelector('h1').textContent = '데이터 관리';
+  document.querySelector('.page-heading .muted').textContent = 'CSV 예측, 학습 및 운영 로그를 관리합니다.';
+}
 const pageSizes = { prediction: 20, drift: 100 };
 const format = value => value == null ? "—" : Number(value).toLocaleString("ko-KR");
 const score = value => value == null ? "—" : Number(value).toFixed(4);
@@ -84,7 +94,7 @@ async function refreshOverview() {
     const health = await api.health();
     state.health = health;
     if (!state.initialized) {
-      $("history-mode").value = health.demo_mode ? "simulation" : "live";
+      $("history-mode").value = "";
       state.initialized = true;
     }
     renderHealth(health);
@@ -96,7 +106,7 @@ async function refreshOverview() {
     $("scenario-help").textContent = "서버 연결을 확인한 뒤 새로고침하세요.";
     notice(error.message, "error");
   }
-  await Promise.all([loadHistory("prediction"), loadHistory("drift"), loadLog(), loadDataset()]);
+  await Promise.all([loadHistory("prediction"), loadHistory("drift"), loadLog(), loadDataset(), loadQuality()]);
   // 서버가 시연 기록을 비운 경우 이전 페이지의 실행 결과도 제거한다.
   if (state.health?.demo_mode && filters().mode === "simulation" && !filters().model_version &&
       state.predictionTotal === 0 && state.driftTotal === 0) {
@@ -104,6 +114,126 @@ async function refreshOverview() {
     $("scenario-result").hidden = true;
   }
   updateControls();
+}
+
+async function loadQuality() {
+  const health = state.health;
+  const banner = $("quality-banner");
+  banner.className = "quality-banner";
+  $("quality-status").className = "badge";
+  if (!health?.model_ready || health.baseline_rmsle == null) {
+    $("quality-title").textContent = !health ? "서버 연결 확인 필요" : !health.model_ready ? "예측 모델 준비 필요" : "새 모델의 기준값 설정 필요";
+    $("quality-description").textContent = "평가 준비 전에는 예측 품질을 정상으로 표시하지 않습니다. 운영 모델 설정을 확인하세요.";
+    $("quality-status").textContent = "평가 대기";
+    return;
+  }
+  try {
+    const mode = health.demo_mode ? "simulation" : "live";
+    const data = await api.drift({mode, model_version: health.model_version, page: 1, page_size: 1});
+    const last = data.items[0];
+    const status = last?.status || "collecting";
+    const messages = {
+      ok: ["최근 예측 오차가 기준 이내입니다", "설정한 경보 조건에 해당하지 않습니다. 예측의 정확성을 보장하는 의미는 아닙니다."],
+      warning: ["최근 예측 오차가 커졌습니다", "한 묶음에서 임계값을 초과했습니다. 다음 평가 묶음의 결과를 확인하세요."],
+      retrain_review: ["예측 품질 저하 감지 · 모델 점검 필요", "두 묶음 이상 연속으로 기준을 초과했습니다. 예측값과 실제 성과를 함께 확인하세요. 재학습 결과는 실행 이력에서 별도로 확인합니다."],
+      collecting: ["첫 평가 결과를 기다리고 있습니다", "실제 7일 결과가 확보된 영상 30개가 모이면 평가합니다."],
+    };
+    $("quality-title").textContent = messages[status][0];
+    $("quality-description").textContent = `현재 모델 v${health.model_version} · ${modeName(mode)} · ${messages[status][1]}${last ? ` 최근 묶음 #${last.block_id}: RMSLE ${score(last.rmsle)} / 임계값 ${score(last.threshold)}` : ""}`;
+    $("quality-status").textContent = status === "retrain_review" ? "드리프트 의심" : statusNames[status];
+    const tone = status === "retrain_review" ? "error" : status === "warning" ? "warn" : status === "ok" ? "ok" : "";
+    banner.className = `quality-banner ${tone}`;
+    $("quality-status").className = `badge ${tone}`;
+  } catch (error) {
+    $("quality-title").textContent = "예측 품질 조회 실패";
+    $("quality-description").textContent = error.message;
+    $("quality-status").textContent = "확인 불가";
+  }
+}
+
+function showVideo(row) {
+  if ($('video-filter').value === 'review') { state.reviewVideo = row.prediction_id; state.driftPage = 1; $('drift-scope').value = 'related'; renderRelated(); }
+  $("video-detail").hidden = false;
+  // $("video-detail-title").textContent = row.video_id;
+  $("video-detail-title").textContent = displayMetadata[row.video_id]?.source_video_id || row.video_id;
+  const m = errorMetrics(row);
+  const metadata = displayMetadata[row.video_id] || {};
+  $("video-detail-content").replaceChildren(
+    element("p", `예측 기록: ${row.prediction_id} · 모델 v${row.model_version} · ${modeName(row.mode)}`),
+    element("p", `예측 시각: ${new Date(row.predicted_at).toLocaleString("ko-KR")}`),
+    element("p", m ? `예측 ${format(row.predicted_views_day7)}회 / 실제 ${format(row.target_views_day7)}회 · ${m.delta > 0 ? "과대예측" : m.delta < 0 ? "과소예측" : "일치"}` : "실제 결과가 등록되면 오차를 계산합니다."),
+    element("p", metadata.category ? `카테고리: ${categoryNames[metadata.category] || metadata.category} · 게시 당시 구독자 ${format(metadata.subscriber_count_at_publish)}명 · 출처: ${metadata.source}` : '추가 메타데이터가 없습니다.', 'hint'),
+    element('p',metadata.ui_demo ? `원본 ${metadata.source_video_id}의 화면 시연용 복제본입니다. 정답은 원본 CSV에 보존되어 있으며 독립 성능 평가에 사용하지 않습니다.` : '이미지는 카테고리별 데모 디자인이며 실제 영상 썸네일이 아닙니다.','hint'),
+  );
+}
+
+function renderVideos() {
+  const rows = state.videos;
+  const observed = rows.filter(row => errorMetrics(row) !== null);
+  $("video-total").textContent = format(rows.length);
+  $("video-observed").textContent = `${observed.length}건`;
+  $("video-review").textContent = `${observed.filter(row => errorMetrics(row).review).length}건`;
+  $("video-pending").textContent = `${rows.filter(row => row.target_views_day7 == null).length}건`;
+  const filter = $('video-filter').value;
+  $('history-description').hidden = filter === 'pending';
+  const selected = selectVideos(rows, filter, $('video-sort').value);
+  state.predictionTotal = selected.length;
+  state.predictionPage = Math.min(state.predictionPage, Math.max(1, Math.ceil(selected.length / pageSizes.prediction)));
+  const visible = selected.slice((state.predictionPage-1)*pageSizes.prediction, state.predictionPage*pageSizes.prediction);
+  $('prediction-page-label').textContent = `${selected.length}건 · ${state.predictionPage} / ${Math.max(1,Math.ceil(selected.length/pageSizes.prediction))}페이지`;
+  $('history-heading').textContent = {pending:'결과 대기 영상 · 7일 예측',observed:'실제 결과 확보 · 예측과 비교',review:'큰 오차 영상 · 사후 점검'}[filter];
+  document.querySelectorAll('[data-video-view]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.videoView===filter)));
+  document.querySelector('.video-table').classList.toggle('pending-view',filter==='pending');
+  renderTable("prediction-rows", visible, [
+    row => {
+      const cell = element("div");
+      cell.className = 'video-identity';
+      const metadata = displayMetadata[row.video_id] || {};
+      const cat = row.category || metadata.category;
+      const thumb = categoryNames[cat] ? element('img') : element('span', '이미지 없음', 'thumbnail-placeholder');
+      if (categoryNames[cat]) { thumb.src=`/demo-thumbnails/${cat}.svg`; thumb.alt=`${categoryNames[cat]} 데모용 썸네일 (실제 영상 이미지 아님)`; thumb.className='demo-thumbnail'; thumb.loading='lazy'; }
+      cell.append(thumb);
+      const info = element('div');
+      const displayId = metadata.source_video_id || row.video_id;
+      const button = element("button", displayId, "video-link");
+      // const button = element("button", row.video_id, "video-link"); button.type = "button";
+      button.addEventListener("click", () => showVideo(row));
+      const subscribers = row.subscriber_count_at_publish ?? metadata.subscriber_count_at_publish;
+      info.append(button, element("small", `${categoryNames[cat] || cat || '카테고리 미제공'} · ${subscribers == null ? '구독자 수 미제공' : `구독자 ${format(subscribers)}명`}`), element('small',`v${row.model_version} · 예측 ${new Date(row.predicted_at).toLocaleString('ko-KR')}`), element('small',metadata.ui_demo ? 'UI 데모 복제본 · 독립 평가용 아님' : `${modeName(row.mode)} · 이미지는 데모 디자인`));
+      cell.append(info);
+      return cell;
+    },
+    row => format(row.predicted_views_day7),
+    row => row.target_views_day7 == null ? "결과 대기" : format(row.target_views_day7),
+    row => { const m = errorMetrics(row); return m ? `${m.delta > 0 ? "+" : ""}${format(m.delta)}` : "—"; },
+    row => { const m = errorMetrics(row); return m ? `${m.ratio.toFixed(2)}배` : "—"; },
+    row => { const m = errorMetrics(row); return element("span", !m ? "결과 대기" : m.review ? `큰 오차 · ${m.delta > 0 ? "과대" : "과소"}` : "결과 확보", `badge ${m?.review ? "warn" : ""}`); },
+    actualButton,
+  ], filter==='pending' ? '실제값 미등록 영상이 없습니다. 데이터 관리에서 정답 없는 CSV로 새 영상을 예측하세요. 시나리오 결과는 이미 실제값이 포함될 수 있습니다.' : '이 조건에 해당하는 기록이 없습니다.');
+  renderRelated();
+}
+
+function renderRelated() {
+  const review = $('video-filter').value === 'review';
+  $('related-drift').hidden = !review;
+  if (!review) return;
+  $('related-drift').open = true;
+  let videos = state.videos.filter(row => errorMetrics(row)?.review);
+  if (state.reviewVideo) videos = videos.filter(row => row.prediction_id === state.reviewVideo);
+  const all = $('drift-scope').value === 'all';
+  const blocks = all ? state.blocks : relatedBlocks(videos,state.blocks);
+  state.driftTotal = blocks.length;
+  state.driftPage = Math.min(state.driftPage,Math.max(1,Math.ceil(blocks.length/pageSizes.drift)));
+  const page = blocks.slice((state.driftPage-1)*pageSizes.drift,state.driftPage*pageSizes.drift);
+  $('drift-heading').textContent = all ? '정상부터 드리프트까지 · 전체 평가 흐름' : '영상이 포함된 묶음의 평가';
+  $('related-description').textContent = all
+    ? `현재 데이터 구분·모델 버전 조회 조건에 맞는 전체 ${blocks.length}개 묶음입니다. 정상 평가도 포함합니다. 버전이나 운영/시뮬레이션이 섞이면 하나의 연속 드리프트 판정으로 해석하지 마세요. 필요하면 위 조회 필터를 지정하세요.`
+    : `${state.reviewVideo ? '선택한 영상' : '큰 오차 영상 전체'}에 연결된 ${blocks.length}개 평가 묶음입니다. RMSLE는 영상 한 개가 아닌 30개 묶음의 오차입니다. 영상 ID를 누르면 해당 기록의 묶음만 표시합니다.`;
+  const empty = all ? '현재 조회 조건에 완료된 평가 묶음이 없습니다.' : '연결된 평가 묶음이 없습니다. 실제값이 있어도 평가 대기 중이거나 아직 묶음에 포함되지 않았을 수 있습니다.';
+  renderTable('drift-rows',page,[r=>`#${r.block_id}`,r=>score(r.rmsle),r=>score(r.threshold),r=>badge(r.status),r=>`${r.consecutive_exceeds}회`,r=>`v${r.model_version}`,r=>modeName(r.mode)],empty);
+  renderChart(page);
+  $('chart-empty').textContent = empty;
+  $('drift-page-label').textContent = `${blocks.length}개 묶음 · ${state.driftPage}페이지`;
 }
 
 function renderTable(bodyId, rows, columns, emptyMessage) {
@@ -129,6 +259,7 @@ function renderTable(bodyId, rows, columns, emptyMessage) {
 }
 
 function actualButton(row) {
+  if (displayMetadata[row.video_id]?.ui_demo) return '-';
   if (row.mode !== "live" || row.target_views_day7 != null) return "—";
   const button = element("button", "실제값 입력", "action-control secondary");
   button.type = "button";
@@ -142,38 +273,37 @@ function actualButton(row) {
 }
 
 async function loadHistory(kind) {
-  const params = { ...filters(), page: state[`${kind}Page`], page_size: pageSizes[kind] };
   const errorBox = $(`${kind}-error`);
   errorBox.textContent = "";
   try {
-    let data = await (kind === "prediction" ? api.predictions(params) : api.drift(params));
-    // 서버 재시작으로 이력이 줄어들면 존재하는 페이지로 돌아간다.
-    if (params.page > 1 && data.items.length === 0) {
-      state[`${kind}Page`] = Math.max(1, Math.ceil(data.total / params.page_size));
-      return loadHistory(kind);
-    }
+    let data = await fetchAllPages(kind === 'prediction' ? api.predictions : api.drift, filters());
+    data.page = 1; data.page_size = 100;
     state[`${kind}Total`] = data.total;
     $(`${kind}-page-label`).textContent = `${format(data.total)}건 · ${data.page} / ${Math.max(1, Math.ceil(data.total / data.page_size))}페이지`;
     if (kind === "prediction") {
-      renderTable("prediction-rows", data.items, [
-        row => row.video_id, row => format(row.predicted_views_day7),
-        row => row.target_views_day7 == null ? "미등록" : format(row.target_views_day7),
-        row => `v${row.model_version}`, row => modeName(row.mode),
-        row => new Date(row.predicted_at).toLocaleString("ko-KR"), actualButton,
-      ], "예측 이력이 없습니다. 시나리오를 실행하거나 영상 CSV로 예측해 보세요.");
+      state.videos = data.items;
+      $("video-detail").hidden = true;
+      renderVideos();
     } else {
+      state.blocks = data.items;
       renderTable("drift-rows", data.items, [
         row => `#${row.block_id}`, row => score(row.rmsle), row => score(row.threshold),
         row => badge(row.status), row => `${row.consecutive_exceeds}회`,
         row => `v${row.model_version}`, row => modeName(row.mode),
       ], "완료된 평가 묶음이 없습니다. 실제값 30개가 모이면 평가합니다.");
       renderChart(data.items);
+      renderRelated();
     }
   } catch (error) {
     errorBox.textContent = `이력 조회 실패: ${error.message}`;
     $(`${kind}-rows`).replaceChildren();
     $(`${kind}-page-label`).textContent = "불러오기 실패";
-    if (kind === "drift") renderChart([]);
+    if (kind === "drift") { state.blocks = []; renderChart([]); renderRelated(); }
+    else {
+      state.videos = [];
+      $("video-detail").hidden = true;
+      for (const id of ["video-total", "video-observed", "video-review", "video-pending"]) $(id).textContent = "—";
+    }
   }
   updateControls();
 }
@@ -271,6 +401,10 @@ async function loadDataset() {
 }
 
 $("run-normal").addEventListener("click", () => runScenario("normal"));
+function changeView() { state.predictionPage=state.driftPage=1; state.reviewVideo=null; $('video-detail').hidden=true; $('actual-form').hidden=true; renderVideos(); updateControls(); }
+$('drift-scope').addEventListener('change', () => { state.driftPage=1; renderRelated(); updateControls(); });
+for (const id of ["video-filter", "video-sort"]) $(id).addEventListener("change", changeView);
+document.querySelectorAll('[data-video-view]').forEach(button=>button.addEventListener('click',()=>{ $('video-filter').value=button.dataset.videoView; changeView(); }));
 $("run-drift").addEventListener("click", () => runScenario("drift"));
 $("refresh").addEventListener("click", () => action("상태 새로고침", refreshOverview));
 $("refresh-log").addEventListener("click", () => action("로그 조회", loadLog));
@@ -285,7 +419,7 @@ for (const kind of ["prediction", "drift"]) {
   for (const [direction, step] of [["prev", -1], ["next", 1]]) {
     $(`${kind}-${direction}`).addEventListener("click", () => action("이력 조회", async () => {
       state[`${kind}Page`] += step;
-      await loadHistory(kind);
+      if (kind === 'prediction') { $('video-detail').hidden=true; renderVideos(); } else renderRelated();
     }));
   }
 }
@@ -333,6 +467,7 @@ $("training-form").addEventListener("submit", event => {
 });
 
 await action("대시보드 불러오는 중", async () => {
+  try { const response = await fetch('/video-metadata.json'); if(response.ok) displayMetadata=await response.json(); } catch { /* Optional display-only metadata; prediction APIs remain usable. */ }
   await refreshOverview();
   if (state.health) notice("서버의 실제 상태와 저장된 이력을 불러왔습니다.", "ok");
 });
