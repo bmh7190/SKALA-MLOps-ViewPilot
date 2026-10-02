@@ -17,7 +17,7 @@ from data.observations import labeled_rows, recorded_video_ids
 from data.storage import latest_upload
 from serving_app import model_loader
 from serving_app.config import MODEL_DIR, MODEL_NAME, PRODUCTION_FILE, deployment_gate
-from serving_app.monitoring.drift_detector import compute_rmsle
+from serving_app.deployment import evaluate_deployment
 
 logger = logging.getLogger("aiops")
 _training_lock = Lock()
@@ -149,21 +149,25 @@ def _train(train_path, validation_path, training_rows, validation_rows, mode, ep
         candidate = model_loader.LoadedModel(model, preprocessor, {}, "candidate")
         actual = [row["target_views_day7"] for row in validation]
         predictions = candidate.predict_many(validation)
-        score = compute_rmsle(actual, predictions)
-        current_score = compute_rmsle(actual, current.predict_many(validation)) if current else None
-        # 재학습 교체는 동일 검증에서의 개선 여부로 결정한다. 드리프트 임계값은 사용하지 않는다.
-        promoted = score < current_score if current else (gate is None or score <= gate)
-        result = {"promoted": promoted, "rmsle": score, "current_rmsle": current_score,
+        current_predictions = current.predict_many(validation) if current else None
+        # 동일한 검증 영상으로 단순 예측·기존 모델과 비교한 뒤에만 배포한다.
+        decision = evaluate_deployment(validation, predictions, current_predictions, gate)
+        promoted, score = decision["promoted"], decision["rmsle"]
+        current_score = decision["current_rmsle"]
+        result = {**decision,
                   "mae": sum(abs(a - p) for a, p in zip(actual, predictions)) / len(actual),
                   "gate": gate, "evaluation_mode": "retrospective" if retrospective else "time_separated",
-                  "deployment_rule": "lower_validation_rmsle" if current else "initial_selection",
                   "training_count": len(training), "validation_count": len(validation),
                   "run_id": run.info.run_id, **selection}
         mlflow.log_params({"mode": mode, "max_epochs": epochs, "patience": patience,
                            "training_count": len(training), "validation_count": len(validation),
                            "sequence_length": 3, "n_features": preprocessor.n_features,
-                           "deployment_gate": gate if gate is not None else "validation_selection"})
-        mlflow.log_metrics({"rmsle": score, "mae": result["mae"], **selection})
+                           "deployment_gate": gate if gate is not None else "not_set",
+                           "deployment_rule": decision["deployment_rule"], "naive_method": decision["naive_method"]})
+        mlflow.log_metrics({"rmsle": score, "naive_rmsle": decision["naive_rmsle"],
+                            "mae": result["mae"], **selection})
+        for check, passed in decision["deployment_checks"].items():
+            mlflow.set_tag(f"deployment_check.{check}", str(passed).lower())
         if current_score is not None:
             mlflow.log_metric("current_rmsle", current_score)
 
