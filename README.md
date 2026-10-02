@@ -55,9 +55,34 @@ python -m serving_app.train_and_register \
 검증 로그 조회수 MSE인 `val_loss`가 10 epoch 동안 개선되지 않으면 멈추고, 가장 좋았던 가중치를 복원합니다.
 최대 epoch에 도달한 경우에도 가장 좋았던 가중치를 복원합니다. 최종 RMSLE는 조회수로 복원·보정한 예측으로 계산합니다.
 
-최초 학습에는 B가 필요 없습니다. `DEPLOY_RMSLE_GATE`를 설정하지 않았다면 검증으로 선택한 모델을
-활성화합니다. 이는 별도의 서비스 품질 상한을 통과했다는 의미는 아닙니다. 상한을 지정하면 함께 적용합니다.
+최초 학습에는 드리프트 기준값 B가 필요 없습니다. 검증으로 선택한 LSTM의 RMSLE가 같은 검증 데이터의
+**Naive baseline RMSLE보다 엄격히 낮을 때만** 활성화합니다. `DEPLOY_RMSLE_GATE`를 설정하면
+그 절대 상한 이하인지도 함께 검사합니다. 미설정이어도 Naive 비교는 생략하지 않습니다.
 이미 활성 모델이 있으면 최초 학습으로 덮어쓰지 않고 오류를 반환합니다.
+
+
+### Naive baseline 배포 게이트
+
+Naive baseline은 **첫 3일의 일평균 조회수가 7일까지 유지된다**고 가정합니다.
+예측식은 `(day1_views + day2_views + day3_views) / 3 * 7`이며 중간에 정수 반올림하지 않습니다.
+정답이나 이후 날짜의 지표를 예측식에 사용하지 않고, 별도 학습·튜닝도 하지 않습니다.
+
+- 최초 배포: `candidate RMSLE < naive RMSLE`, 설정한 경우 `candidate RMSLE <= DEPLOY_RMSLE_GATE`도 만족
+- 재학습 교체: `candidate RMSLE < naive RMSLE` **그리고** `candidate RMSLE < current RMSLE`
+- 실패: 후보의 실험 결과는 남기되 최초 활성화는 보류하고, 재학습에서는 기존 모델·가중치·포인터를 유지
+
+비교는 항상 같은 검증 영상에서 수행합니다. API 결과와 모델 metadata에는 `naive_rmsle`,
+`naive_method`, `deployment_checks`, `deployment_rule`을 남깁니다. MLflow에도 Naive RMSLE와
+규칙·조건별 통과 여부를 기록합니다. 화면의 실행 응답 JSON에서 함께 확인할 수 있습니다.
+
+Naive baseline은 배포 후보와 비교하는 **단순 예측 방식**입니다. `baseline_normal.csv`로 계산하는
+**드리프트 기준값 B**와 다르며, 30개 묶음·두 번 연속 초과 조건은 그대로 유지합니다.
+단순 규칙과 기존 모델을 이겼다는 상대 평가이므로 실제 서비스의 절대 품질을 보장하지는 않습니다.
+
+2026-10-02 별도 브랜치와 임시 runtime에서 제공된 합성 데이터를 변경하지 않고 재평가했습니다.
+최초 검증 RMSLE는 LSTM 0.1008 / Naive 0.2161, 정상 4묶음은 모두 정상,
+드리프트 재학습 검증은 후보 0.1141 / 기존 0.5005 / Naive 0.5378로 게이트를 통과했습니다.
+상세 조건과 수치는 [Naive 게이트 검증 결과](docs/naive_gate_evaluation.json)를 참고하세요.
 
 ## 베이스라인 수동 계산과 설정
 
@@ -176,7 +201,7 @@ python scripts/run_scenarios.py --scenario drift
 
 1. 앞 60개를 기존 모델로 평가하고, 두 묶음 연속 초과하면 이 60개로 추가 학습합니다.
 2. 뒤 60개는 가중치 학습에 넣지 않습니다. 검증 손실로 최적 가중치를 선택하고 두 모델을 비교합니다.
-3. 같은 검증 60개에서 후보 RMSLE가 기존 모델보다 **엄격히 낮으면** 교체합니다. 동점이나 악화는 유지합니다.
+3. 같은 검증 60개에서 후보 RMSLE가 **Naive baseline과 기존 모델 모두보다 엄격히 낮으면** 교체합니다. 어느 하나와 동점이거나 더 나쁘면 기존 모델을 유지합니다.
 
 기존 모델을 복제하고 전처리를 고정한 채 학습률 `1e-4`로 최대 10 epoch 추가 학습합니다.
 드리프트 임계값은 재학습을 시작하는 신호이며 배포 상한으로 사용하지 않습니다.
@@ -325,6 +350,7 @@ curl 'http://localhost:8000/api/v1/monitoring/drift?mode=simulation&model_versio
 - `data/baselines.py`: 수동 기준값과 기준 영상 보관
 - `data/observations.py`: SQLite 예측·실제값·평가 묶음
 - `serving_app/train_and_register.py`: 학습·조기 종료·모델 선택
+- `serving_app/deployment.py`: Naive·기존 모델 비교와 배포 게이트
 - `serving_app/model_loader.py`: 모델·전처리 버전 로딩과 캐시 교체
 - `serving_app/demo.py`: 시작 시 원본 모델·기준값을 시연 폴더로 복원
 - `serving_app/routers/simulations.py`: 두 버튼용 시나리오 API
@@ -338,7 +364,8 @@ python -m unittest discover -s tests -v
 python -m tests.smoke_training
 ```
 
-테스트는 임시 runtime을 사용합니다. smoke test는 실제 TensorFlow 최초 학습과 MLflow 로딩, 동점 후보의 교체 거절을 확인하고,
+테스트는 임시 runtime을 사용합니다. smoke test는 Naive 미달 최초 후보와 개선됐지만 Naive에 못 미치는 재학습 후보의 차단,
+실제 TensorFlow 최초 학습과 MLflow 로딩, 동점 후보의 교체 거절을 확인하고,
 교체 성공 분기에는 재현 가능한 고정 출력 후보를 사용합니다. 실제 데이터에서 재학습이 개선됐다는 증거는 아닙니다.
 
 Docker 구성 확인 및 실행:

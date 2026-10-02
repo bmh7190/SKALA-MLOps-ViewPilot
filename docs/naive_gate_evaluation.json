@@ -1,0 +1,149 @@
+{
+  "date": "2026-10-02",
+  "data_sha256": {
+    "train": "22746206c0d22a60cf816155bb4aa5babf93ad8b37ed3872fcc55d1914536366",
+    "validation": "1d66a467903f29fcfa218f8f3b411dff4fbdb4682a7d606cb83cb4f1e377b22a",
+    "baseline_normal": "4aa3ab0a3e161f6b48261193181e2e85aaf7ccf14912cb19a6be119abd1196be",
+    "test_normal": "6da43d01805f6e8c11fc9ed577a87ea9b504207eaa93240394f2bdc6089ddc23",
+    "test_drift": "fcd059b77f5c5c4a18bb617b7c95e298fe01e9205ad4775cbf56d1164071cbd8"
+  },
+  "naive_formula": "(day1_views + day2_views + day3_views) / 3 * 7",
+  "initial": {
+    "promoted": true,
+    "rmsle": 0.10082709202079473,
+    "naive_rmsle": 0.21605385291070914,
+    "current_rmsle": null,
+    "deployment_checks": {
+      "beats_naive": true
+    },
+    "deployment_rule": "beats_naive_initial_selection",
+    "naive_method": "first_3_days_daily_mean_x7",
+    "mae": 8343.636666666667,
+    "gate": null,
+    "evaluation_mode": "time_separated",
+    "training_count": 3000,
+    "validation_count": 600,
+    "run_id": "e1001385040e4b22ab1e684af947e8fb",
+    "epochs_completed": 100,
+    "best_epoch": 91,
+    "best_validation_loss": 0.010166111402213573,
+    "version": "1"
+  },
+  "observation_count": 180,
+  "validation_in_observations": 0,
+  "passed": true,
+  "limitations": [
+    "Synthetic data; not real YouTube performance.",
+    "Retrospective drift split: first 60 train, last 60 validate.",
+    "Validation selects weights and promotion; no independent post-promotion quality test.",
+    "Absolute gate is unset; initial selection still requires beating naive."
+  ],
+  "branch": "feat/naive-baseline-gate",
+  "base_commit": "50d33df",
+  "data": "Unchanged provided synthetic CSV files",
+  "model": "LSTM 32 -> 32 -> 16 -> Dense 16 -> Dense 1",
+  "seed": 42,
+  "max_epochs": 100,
+  "patience": 10,
+  "baseline_rmsle": 0.08797057385361541,
+  "threshold": 0.18797057385361543,
+  "final_health": {
+    "status": "ok",
+    "demo_mode": false,
+    "model_ready": true,
+    "model_version": "2",
+    "baseline_rmsle": null,
+    "drift_threshold": null,
+    "deployment_gate": null
+  },
+  "normal": [
+    {
+      "rmsle": 0.12452760146128454,
+      "threshold": 0.18797057385361543,
+      "status": "ok",
+      "consecutive_exceeds": 0,
+      "model_version": "1"
+    },
+    {
+      "rmsle": 0.11380021469933772,
+      "threshold": 0.18797057385361543,
+      "status": "ok",
+      "consecutive_exceeds": 0,
+      "model_version": "1"
+    },
+    {
+      "rmsle": 0.1202397501178517,
+      "threshold": 0.18797057385361543,
+      "status": "ok",
+      "consecutive_exceeds": 0,
+      "model_version": "1"
+    },
+    {
+      "rmsle": 0.09378764344459133,
+      "threshold": 0.18797057385361543,
+      "status": "ok",
+      "consecutive_exceeds": 0,
+      "model_version": "1"
+    }
+  ],
+  "drift": [
+    {
+      "rmsle": 0.5324632895709617,
+      "threshold": 0.18797057385361543,
+      "status": "warning",
+      "consecutive_exceeds": 1,
+      "model_version": "1"
+    },
+    {
+      "rmsle": 0.5007441589760344,
+      "threshold": 0.18797057385361543,
+      "status": "retrain_review",
+      "consecutive_exceeds": 2,
+      "model_version": "1",
+      "retraining": {
+        "status": "completed",
+        "promoted": true,
+        "rmsle": 0.11411411993981341,
+        "naive_rmsle": 0.5378438226752988,
+        "current_rmsle": 0.500456749347548,
+        "deployment_checks": {
+          "beats_naive": true,
+          "beats_current": true
+        },
+        "deployment_rule": "beats_naive_and_current",
+        "naive_method": "first_3_days_daily_mean_x7",
+        "mae": 4841.3,
+        "gate": null,
+        "evaluation_mode": "retrospective",
+        "training_count": 60,
+        "validation_count": 60,
+        "run_id": "c660a6dd2af14de7b62e7ba5d734371e",
+        "epochs_completed": 10,
+        "best_epoch": 10,
+        "best_validation_loss": 0.013205111026763916,
+        "version": "2",
+        "baseline_required": true
+      }
+    }
+  ],
+  "verification": {
+    "unit_api_tests": 56,
+    "tensorflow_mlflow_smoke": "passed",
+    "checks": [
+      "initial beats naive",
+      "normal 4 blocks remain ok",
+      "drift warning then retrain_review",
+      "retrained model beats naive and current; promoted",
+      "new model needs its own drift baseline",
+      "initial below-naive candidate not activated",
+      "improved but below-naive candidate not promoted",
+      "equal-score candidate retained; serving weights and pointer unchanged",
+      "local and MLflow reload passed"
+    ],
+    "commands": [
+      "python -m unittest discover -s tests -v",
+      "python -m tests.smoke_training"
+    ],
+    "scenario_method": "Fresh isolated runtime: train/validation -> manual baseline calculation/configuration -> normal 4 blocks -> drift 2 blocks via FastAPI TestClient; drift final request holds out last 60 videos for validation."
+  }
+}
