@@ -1,0 +1,1230 @@
+{
+  "synthetic_test_normal_00001": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 17965,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00002": {
+    "category": "education",
+    "subscriber_count_at_publish": 19723,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00003": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 64625,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00004": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 28831,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00005": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 22546,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00006": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 11951,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00007": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 32432,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00008": {
+    "category": "education",
+    "subscriber_count_at_publish": 22075,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00009": {
+    "category": "education",
+    "subscriber_count_at_publish": 30152,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00010": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 54477,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00011": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 33566,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00012": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 26541,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00013": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 64484,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00014": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 98598,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00015": {
+    "category": "education",
+    "subscriber_count_at_publish": 32396,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00016": {
+    "category": "education",
+    "subscriber_count_at_publish": 30713,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00017": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 18823,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00018": {
+    "category": "education",
+    "subscriber_count_at_publish": 56180,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00019": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 93049,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00020": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 12360,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00021": {
+    "category": "education",
+    "subscriber_count_at_publish": 56054,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00022": {
+    "category": "education",
+    "subscriber_count_at_publish": 18485,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00023": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 27583,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00024": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 56746,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00025": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 17166,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00026": {
+    "category": "education",
+    "subscriber_count_at_publish": 22952,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00027": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 48976,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00028": {
+    "category": "education",
+    "subscriber_count_at_publish": 13629,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00029": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 11317,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00030": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 38553,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00031": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 77913,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00032": {
+    "category": "education",
+    "subscriber_count_at_publish": 16907,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00033": {
+    "category": "education",
+    "subscriber_count_at_publish": 10752,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00034": {
+    "category": "education",
+    "subscriber_count_at_publish": 26534,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00035": {
+    "category": "education",
+    "subscriber_count_at_publish": 65917,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00036": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 35453,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00037": {
+    "category": "education",
+    "subscriber_count_at_publish": 48538,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00038": {
+    "category": "education",
+    "subscriber_count_at_publish": 29482,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00039": {
+    "category": "education",
+    "subscriber_count_at_publish": 10759,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00040": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 20999,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00041": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 26032,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00042": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 41741,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00043": {
+    "category": "education",
+    "subscriber_count_at_publish": 11565,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00044": {
+    "category": "education",
+    "subscriber_count_at_publish": 46145,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00045": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 48433,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00046": {
+    "category": "education",
+    "subscriber_count_at_publish": 18338,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00047": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 40507,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00048": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 59830,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00049": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 16415,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00050": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 28921,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00051": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 51043,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00052": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 13569,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00053": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 14738,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00054": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 13857,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00055": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 87804,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00056": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 45811,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00057": {
+    "category": "education",
+    "subscriber_count_at_publish": 21741,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00058": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 19232,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00059": {
+    "category": "education",
+    "subscriber_count_at_publish": 41403,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00060": {
+    "category": "education",
+    "subscriber_count_at_publish": 86636,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00061": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 21461,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00062": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 12788,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00063": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 87583,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00064": {
+    "category": "education",
+    "subscriber_count_at_publish": 23507,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00065": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 58395,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00066": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 18004,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00067": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 17069,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00068": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 24575,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00069": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 28093,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00070": {
+    "category": "education",
+    "subscriber_count_at_publish": 97549,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00071": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 12164,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00072": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 42913,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00073": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 36762,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00074": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 23428,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00075": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 37442,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00076": {
+    "category": "education",
+    "subscriber_count_at_publish": 13489,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00077": {
+    "category": "education",
+    "subscriber_count_at_publish": 74336,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00078": {
+    "category": "education",
+    "subscriber_count_at_publish": 28021,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00079": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 26944,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00080": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 31494,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00081": {
+    "category": "education",
+    "subscriber_count_at_publish": 75048,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00082": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 28170,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00083": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 17318,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00084": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 13284,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00085": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 10703,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00086": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 92953,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00087": {
+    "category": "education",
+    "subscriber_count_at_publish": 41272,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00088": {
+    "category": "education",
+    "subscriber_count_at_publish": 22353,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00089": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 82282,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00090": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 14004,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00091": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 25338,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00092": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 46324,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00093": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 27021,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00094": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 73520,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00095": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 71755,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00096": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 78575,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00097": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 96061,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00098": {
+    "category": "education",
+    "subscriber_count_at_publish": 86708,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00099": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 66601,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00100": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 24035,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00101": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 46140,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00102": {
+    "category": "education",
+    "subscriber_count_at_publish": 19269,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00103": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 87983,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00104": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 14912,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00105": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 28342,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00106": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 13557,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00107": {
+    "category": "education",
+    "subscriber_count_at_publish": 67606,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00108": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 16594,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00109": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 24608,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00110": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 15655,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00111": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 17896,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00112": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 35456,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00113": {
+    "category": "education",
+    "subscriber_count_at_publish": 60039,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00114": {
+    "category": "education",
+    "subscriber_count_at_publish": 73068,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00115": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 21569,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00116": {
+    "category": "education",
+    "subscriber_count_at_publish": 29029,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00117": {
+    "category": "education",
+    "subscriber_count_at_publish": 22660,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00118": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 24833,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00119": {
+    "category": "education",
+    "subscriber_count_at_publish": 53765,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_normal_00120": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 52176,
+    "source": "data/synthetic/test_normal.csv"
+  },
+  "synthetic_test_drift_00001": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 31059,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00002": {
+    "category": "education",
+    "subscriber_count_at_publish": 12474,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00003": {
+    "category": "education",
+    "subscriber_count_at_publish": 66628,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00004": {
+    "category": "education",
+    "subscriber_count_at_publish": 52148,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00005": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 23838,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00006": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 32605,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00007": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 80417,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00008": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 49974,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00009": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 15975,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00010": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 41720,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00011": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 23240,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00012": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 83005,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00013": {
+    "category": "education",
+    "subscriber_count_at_publish": 22696,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00014": {
+    "category": "education",
+    "subscriber_count_at_publish": 10113,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00015": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 76407,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00016": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 69737,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00017": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 39813,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00018": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 11384,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00019": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 40408,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00020": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 21501,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00021": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 18545,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00022": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 14235,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00023": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 22275,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00024": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 67568,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00025": {
+    "category": "education",
+    "subscriber_count_at_publish": 28052,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00026": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 71035,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00027": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 58530,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00028": {
+    "category": "education",
+    "subscriber_count_at_publish": 35438,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00029": {
+    "category": "education",
+    "subscriber_count_at_publish": 14761,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00030": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 11760,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00031": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 36432,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00032": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 46111,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00033": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 39027,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00034": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 19126,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00035": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 44679,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00036": {
+    "category": "education",
+    "subscriber_count_at_publish": 30933,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00037": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 15554,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00038": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 49646,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00039": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 23139,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00040": {
+    "category": "education",
+    "subscriber_count_at_publish": 47863,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00041": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 89634,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00042": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 28227,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00043": {
+    "category": "education",
+    "subscriber_count_at_publish": 43046,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00044": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 25336,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00045": {
+    "category": "education",
+    "subscriber_count_at_publish": 35291,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00046": {
+    "category": "education",
+    "subscriber_count_at_publish": 62765,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00047": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 14953,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00048": {
+    "category": "education",
+    "subscriber_count_at_publish": 34738,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00049": {
+    "category": "education",
+    "subscriber_count_at_publish": 34013,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00050": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 19524,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00051": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 47451,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00052": {
+    "category": "education",
+    "subscriber_count_at_publish": 73441,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00053": {
+    "category": "education",
+    "subscriber_count_at_publish": 33577,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00054": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 93749,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00055": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 97522,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00056": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 17252,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00057": {
+    "category": "education",
+    "subscriber_count_at_publish": 25549,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00058": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 36430,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00059": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 20539,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00060": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 60492,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00061": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 31227,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00062": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 43938,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00063": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 24102,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00064": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 12212,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00065": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 54485,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00066": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 71061,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00067": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 45348,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00068": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 24199,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00069": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 79212,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00070": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 11552,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00071": {
+    "category": "education",
+    "subscriber_count_at_publish": 32083,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00072": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 54641,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00073": {
+    "category": "education",
+    "subscriber_count_at_publish": 56637,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00074": {
+    "category": "education",
+    "subscriber_count_at_publish": 37795,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00075": {
+    "category": "education",
+    "subscriber_count_at_publish": 25118,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00076": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 17107,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00077": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 18308,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00078": {
+    "category": "education",
+    "subscriber_count_at_publish": 20504,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00079": {
+    "category": "education",
+    "subscriber_count_at_publish": 12377,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00080": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 14589,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00081": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 58980,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00082": {
+    "category": "education",
+    "subscriber_count_at_publish": 96249,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00083": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 64974,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00084": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 16551,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00085": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 15417,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00086": {
+    "category": "education",
+    "subscriber_count_at_publish": 19905,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00087": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 28187,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00088": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 46707,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00089": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 15139,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00090": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 13872,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00091": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 55316,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00092": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 36137,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00093": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 22643,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00094": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 57643,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00095": {
+    "category": "education",
+    "subscriber_count_at_publish": 29216,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00096": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 76706,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00097": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 28207,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00098": {
+    "category": "education",
+    "subscriber_count_at_publish": 90036,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00099": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 41349,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00100": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 62491,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00101": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 33235,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00102": {
+    "category": "education",
+    "subscriber_count_at_publish": 18281,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00103": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 40233,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00104": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 58846,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00105": {
+    "category": "education",
+    "subscriber_count_at_publish": 13451,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00106": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 14097,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00107": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 27406,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00108": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 63950,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00109": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 33444,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00110": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 15691,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00111": {
+    "category": "education",
+    "subscriber_count_at_publish": 81329,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00112": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 40881,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00113": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 69288,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00114": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 19197,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00115": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 61575,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00116": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 61598,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00117": {
+    "category": "education",
+    "subscriber_count_at_publish": 18946,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00118": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 60643,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00119": {
+    "category": "education",
+    "subscriber_count_at_publish": 10094,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "synthetic_test_drift_00120": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 10613,
+    "source": "data/synthetic/test_drift.csv"
+  },
+  "ui_demo_pending_gaming": {
+    "category": "gaming",
+    "subscriber_count_at_publish": 17965,
+    "source": "data/synthetic/test_normal.csv",
+    "source_video_id": "synthetic_test_normal_00001",
+    "ui_demo": true
+  },
+  "ui_demo_pending_education": {
+    "category": "education",
+    "subscriber_count_at_publish": 19723,
+    "source": "data/synthetic/test_normal.csv",
+    "source_video_id": "synthetic_test_normal_00002",
+    "ui_demo": true
+  },
+  "ui_demo_pending_lifestyle": {
+    "category": "lifestyle",
+    "subscriber_count_at_publish": 64625,
+    "source": "data/synthetic/test_normal.csv",
+    "source_video_id": "synthetic_test_normal_00003",
+    "ui_demo": true
+  },
+  "ui_demo_pending_entertainment": {
+    "category": "entertainment",
+    "subscriber_count_at_publish": 11951,
+    "source": "data/synthetic/test_normal.csv",
+    "source_video_id": "synthetic_test_normal_00006",
+    "ui_demo": true
+  }
+}

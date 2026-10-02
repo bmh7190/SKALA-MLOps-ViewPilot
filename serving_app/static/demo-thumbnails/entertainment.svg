@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+<rect width="640" height="360" rx="20" fill="#3d124b"/>
+<circle cx="550" cy="135" r="155" fill="#ffac51" opacity=".24"/>
+<circle cx="540" cy="230" r="90" fill="#ffac51" opacity=".35"/>
+<rect x="36" y="35" width="190" height="32" rx="8" fill="#ffac51"/>
+<g font-family="Arial,Apple SD Gothic Neo,sans-serif"><text x="48" y="58" font-size="20" font-weight="700" fill="#3d124b">ON AIR</text>
+<text x="34" y="160" font-size="47" font-weight="800" fill="white">BEST MOMENTS</text>
+<text x="36" y="218" font-size="31" font-weight="700" fill="white">이번 주 하이라이트</text>
+<text x="36" y="322" font-size="20" fill="white" opacity=".8">VIEWPILOT · DEMO ARTWORK</text></g>
+<rect x="526" y="290" width="78" height="36" rx="7" fill="#3d124b"/><text x="537" y="316" font-family="Arial" font-size="23" fill="white">DEMO</text>
+</svg>
